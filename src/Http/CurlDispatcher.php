@@ -128,6 +128,9 @@ final class CurlDispatcher
 
         curl_close($this->curl);
 
+        if ($info['http_code'] === 999) {
+            $info['http_code'] = 403;
+        }
         $response = $responseFactory->createResponse($info['http_code']);
 
         foreach ($this->headers as $header) {
