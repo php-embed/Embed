@@ -15,15 +15,19 @@ class LinkedData
 {
     use ApiTrait;
 
-    private ?DocumentInterface $document;
+    private ?DocumentInterface $document = null;
 
-    private array $allData;
+    /** @var array<string, mixed> */
+    private array $allData = [];
 
+    /**
+     * @return mixed
+     */
     public function get(string ...$keys)
     {
         $graph = $this->getGraph();
 
-        if (!$graph) {
+        if ($graph === null) {
             return null;
         }
 
@@ -33,7 +37,7 @@ class LinkedData
             foreach ($graph->getNodes() as $node) {
                 $value = self::getValue($node, ...$subkeys);
 
-                if ($value) {
+                if ($value !== null && $value !== '' && $value !== false && $value !== []) {
                     return $value;
                 }
             }
@@ -42,9 +46,12 @@ class LinkedData
         return null;
     }
 
-    public function getAll()
+    /**
+     * @return array<string, mixed>
+     */
+    public function getAll(): array
     {
-        if (!isset($this->allData)) {
+        if ($this->allData === []) {
             $this->fetchData();
         }
 
@@ -55,7 +62,11 @@ class LinkedData
     {
         if (!isset($this->document)) {
             try {
-                $this->document = LdDocument::load(json_encode($this->all()));
+                $encoded = json_encode($this->all());
+                if ($encoded === false) {
+                    $encoded = '{}';
+                }
+                $this->document = LdDocument::load($encoded);
             } catch (Throwable $throwable) {
                 $this->document = LdDocument::load('{}');
                 return null;
@@ -65,6 +76,9 @@ class LinkedData
         return $this->document->getGraph($name);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $this->allData = [];
@@ -72,16 +86,17 @@ class LinkedData
         $document = $this->extractor->getDocument();
         $nodes = $document->select('.//script', ['type' => 'application/ld+json'])->strAll();
 
-        if (empty($nodes)) {
+        if ($nodes === []) {
             return [];
         }
 
         try {
+            /** @var array<string, mixed> $data */
             $data = [];
             $request_uri = (string)$this->extractor->getUri();
             foreach ($nodes as $node) {
                 $ldjson = json_decode($node, true);
-                if (!empty($ldjson)) {
+                if (is_array($ldjson) && $ldjson !== []) {
 
                     // some pages with multiple ld+json blocks will put
                     // each block into an array (Flickr does this). Most
@@ -92,24 +107,30 @@ class LinkedData
                         $ldjson = [$ldjson];
                     }
 
-                    foreach ($ldjson as $node) {
-                        if (empty($data)) {
-                            $data = $node;
-                        } elseif (isset($node['mainEntityOfPage'])) {
+                    foreach ($ldjson as $ldNode) {
+                        if (!is_array($ldNode)) {
+                            continue;
+                        }
+                        if ($data === []) {
+                            /** @var array<string, mixed> $data */
+                            $data = $ldNode;
+                        } elseif (isset($ldNode['mainEntityOfPage'])) {
                             $url = '';
-                            if (is_string($node['mainEntityOfPage'])) {
-                                $url = $node['mainEntityOfPage'];
-                            } elseif (isset($node['mainEntityOfPage']['@id'])) {
-                                $url = $node['mainEntityOfPage']['@id'];
+                            if (is_string($ldNode['mainEntityOfPage'])) {
+                                $url = $ldNode['mainEntityOfPage'];
+                            } elseif (is_array($ldNode['mainEntityOfPage']) && isset($ldNode['mainEntityOfPage']['@id']) && is_string($ldNode['mainEntityOfPage']['@id'])) {
+                                $url = $ldNode['mainEntityOfPage']['@id'];
                             }
-                            if (!empty($url) && $url == $request_uri) {
-                                $data = $node;
+                            if ($url !== '' && $url === $request_uri) {
+                                /** @var array<string, mixed> $data */
+                                $data = $ldNode;
                             }
                         }
                     }
 
-
-                    $this->allData = array_merge($this->allData, $ldjson);
+                    /** @var array<string, mixed> $mergedData */
+                    $mergedData = array_merge($this->allData, $ldjson);
+                    $this->allData = $mergedData;
                 }
             }
 
@@ -119,6 +140,9 @@ class LinkedData
         }
     }
 
+    /**
+     * @return mixed
+     */
     private static function getValue(Node $node, string ...$keys)
     {
         foreach ($keys as $key) {
@@ -131,7 +155,7 @@ class LinkedData
 
             $node = $node->getProperty("http://schema.org/{$key}");
 
-            if (!$node) {
+            if ($node === null) {
                 return null;
             }
         }
@@ -139,6 +163,10 @@ class LinkedData
         return self::detectValue($node);
     }
 
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
     private static function detectValue($value)
     {
         if (is_array($value)) {
@@ -156,6 +184,10 @@ class LinkedData
             return $value->getId();
         }
 
-        return $value->getValue();
+        if (is_object($value) && method_exists($value, 'getValue')) {
+            return $value->getValue();
+        }
+
+        return null;
     }
 }

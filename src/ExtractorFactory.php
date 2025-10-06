@@ -11,6 +11,7 @@ use Psr\Http\Message\UriInterface;
 class ExtractorFactory
 {
     private string $default = Extractor::class;
+    /** @var array<string, class-string<Extractor>> */
     private array $adapters = [
         'slides.com' => Adapters\Slides\Extractor::class,
         'pinterest.com' => Adapters\Pinterest\Extractor::class,
@@ -32,9 +33,14 @@ class ExtractorFactory
         'twitter.com' => Adapters\Twitter\Extractor::class,
         'x.com' => Adapters\Twitter\Extractor::class,
     ];
+    /** @var array<string, class-string<Detectors\Detector>> */
     private array $customDetectors = [];
+    /** @var array<string, mixed> */
     private array $settings;
 
+    /**
+     * @param array<string, mixed>|null $settings
+     */
     public function __construct(?array $settings = [])
     {
         $this->settings = $settings ?? [];
@@ -63,8 +69,10 @@ class ExtractorFactory
         $extractor = new $class($uri, $request, $response, $crawler);
         $extractor->setSettings($this->settings);
 
-        foreach ($this->customDetectors as $name => $detector) {
-            $extractor->addDetector($name, new $detector($extractor));
+        foreach ($this->customDetectors as $name => $detectorClass) {
+            /** @var Detectors\Detector */
+            $detector = new $detectorClass($extractor);
+            $extractor->addDetector($name, $detector);
         }
 
         foreach ($extractor->createCustomDetectors() as $name => $detector) {
@@ -74,11 +82,17 @@ class ExtractorFactory
         return $extractor;
     }
 
+    /**
+     * @param class-string<Extractor> $class
+     */
     public function addAdapter(string $pattern, string $class): void
     {
         $this->adapters[$pattern] = $class;
     }
 
+    /**
+     * @param class-string<Detectors\Detector> $class
+     */
     public function addDetector(string $name, string $class): void
     {
         $this->customDetectors[$name] = $class;
@@ -94,6 +108,9 @@ class ExtractorFactory
         $this->default = $class;
     }
 
+    /**
+     * @param array<string, mixed> $settings
+     */
     public function setSettings(array $settings): void
     {
         $this->settings = $settings;

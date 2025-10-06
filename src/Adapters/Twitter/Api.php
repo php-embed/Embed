@@ -10,23 +10,26 @@ class Api
 {
     use HttpApiTrait;
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $token = $this->extractor->getSetting('twitter:token');
 
-        if (!$token) {
+        if (!is_string($token) || $token === '') {
             return [];
         }
-        
+
         $uri = $this->extractor->getUri();
 
         $id = getDirectory($uri->getPath(), 2);
 
-        if (empty($id)) {
+        if ($id === null || $id === '' || $id === '0') {
             return [];
         }
 
-        $this->extractor->getCrawler()->addDefaultHeaders(array('Authorization' => "Bearer $token"));
+        $this->extractor->getCrawler()->addDefaultHeaders(array('Authorization' => "Bearer {$token}"));
         $this->endpoint = $this->extractor->getCrawler()->createUri("https://api.twitter.com/2/tweets/{$id}?expansions=author_id,attachments.media_keys&tweet.fields=created_at&media.fields=preview_image_url,url&user.fields=id,name");
 
         return $this->fetchJSON($this->endpoint);

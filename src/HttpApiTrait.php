@@ -10,13 +10,16 @@ trait HttpApiTrait
 {
     use ApiTrait;
 
-    private ?UriInterface $endpoint;
+    private ?UriInterface $endpoint = null;
 
     public function getEndpoint(): ?UriInterface
     {
         return $this->endpoint;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function fetchJSON(UriInterface $uri): array
     {
         $crawler = $this->extractor->getCrawler();
@@ -24,7 +27,12 @@ trait HttpApiTrait
         $response = $crawler->sendRequest($request);
 
         try {
-            return json_decode((string) $response->getBody(), true) ?: [];
+            $data = json_decode((string) $response->getBody(), true);
+            if (is_array($data)) {
+                /** @var array<string, mixed> */
+                return $data;
+            }
+            return [];
         } catch (Exception $exception) {
             return [];
         }

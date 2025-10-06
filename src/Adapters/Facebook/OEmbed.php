@@ -16,14 +16,14 @@ class OEmbed extends Base
     {
         $token = $this->extractor->getSetting('facebook:token');
 
-        if (!$token) {
+        if (!is_string($token) || $token === '') {
             return null;
         }
 
         $uri = $this->extractor->getUri();
         if (strpos($uri->getPath(), 'login') !== false) {
             parse_str($uri->getQuery(), $params);
-            if (!empty($params['next'])) {
+            if (isset($params['next']) && is_string($params['next']) && $params['next'] !== '' && $params['next'] !== '0') {
                 $uri = $this->extractor->getCrawler()->createUri($params['next']);
             }
         }

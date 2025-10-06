@@ -5,6 +5,9 @@ namespace Embed\Detectors;
 
 class Keywords extends Detector
 {
+    /**
+     * @return string[]
+     */
     public function detect(): array
     {
         $tags = [];
@@ -24,25 +27,30 @@ class Keywords extends Detector
         foreach ($types as $type) {
             $value = $metas->strAll($type);
 
-            if ($value) {
+            if ($value !== []) {
                 $tags = array_merge($tags, self::toArray($value));
             }
         }
 
         $value = $ld->strAll('keywords');
 
-        if ($value) {
+        if ($value !== []) {
             $tags = array_merge($tags, self::toArray($value));
         }
 
+        /** @var array<lowercase-string> */
         $tags = array_map('mb_strtolower', $tags);
         $tags = array_unique($tags);
-        $tags = array_filter($tags);
+        $tags = array_filter($tags, fn ($value) => $value !== '' && $value !== '0');
         $tags = array_values($tags);
 
         return $tags;
     }
 
+    /**
+     * @param string[] $keywords
+     * @return string[]
+     */
     private static function toArray(array $keywords): array
     {
         $all = [];
@@ -52,7 +60,7 @@ class Keywords extends Detector
             $tags = array_map('trim', $tags);
             $tags = array_filter(
                 $tags,
-                fn ($value) => !empty($value) && substr($value, -3) !== '...'
+                fn ($value) => $value !== '' && $value !== '0' && substr($value, -3) !== '...'
             );
 
             $all = array_merge($all, $tags);

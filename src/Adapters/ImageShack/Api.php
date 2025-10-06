@@ -11,6 +11,9 @@ class Api
 {
     use HttpApiTrait;
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $uri = $this->extractor->getUri();
@@ -25,12 +28,19 @@ class Api
 
         $id = getDirectory($uri->getPath(), 1);
 
-        if (empty($id)) {
+        if ($id === null || $id === '' || $id === '0') {
             return [];
         }
 
         $this->endpoint = $this->extractor->getCrawler()->createUri("https://api.imageshack.com/v2/images/{$id}");
         $data = $this->fetchJSON($this->endpoint);
-        return $data['result'] ?? [];
+
+        if (isset($data['result']) && is_array($data['result'])) {
+            /** @var array<string, mixed> */
+            $result = $data['result'];
+            return $result;
+        }
+
+        return [];
     }
 }

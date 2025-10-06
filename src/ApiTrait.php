@@ -10,28 +10,35 @@ use Throwable;
 trait ApiTrait
 {
     protected Extractor $extractor;
-    private array $data;
+    /** @var array<string, mixed> */
+    private array $data = [];
 
     public function __construct(Extractor $extractor)
     {
         $this->extractor = $extractor;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function all(): array
     {
-        if (!isset($this->data)) {
+        if ($this->data === []) {
             $this->data = $this->fetchData();
         }
 
         return $this->data;
     }
 
+    /**
+     * @return mixed
+     */
     public function get(string ...$keys)
     {
         $data = $this->all();
 
         foreach ($keys as $key) {
-            if (!isset($data[$key])) {
+            if (!is_array($data) || !isset($data[$key])) {
                 return null;
             }
 
@@ -49,13 +56,22 @@ trait ApiTrait
             $value = array_shift($value);
         }
 
-        return $value ? clean((string) $value) : null;
+        if (is_string($value)) {
+            return clean($value);
+        } elseif (is_scalar($value)) {
+            return clean((string) $value);
+        }
+
+        return null;
     }
 
+    /**
+     * @return string[]
+     */
     public function strAll(string ...$keys): array
     {
         $all = (array) $this->get(...$keys);
-        return array_filter(array_map(fn ($value) => clean($value), $all));
+        return array_filter(array_map(fn ($value) => is_string($value) ? clean($value) : null, $all), fn ($value) => $value !== null);
     }
 
     public function html(string ...$keys): ?string
@@ -66,7 +82,13 @@ trait ApiTrait
             $value = array_shift($value);
         }
 
-        return $value ? clean((string) $value, true) : null;
+        if (is_string($value)) {
+            return clean($value, true);
+        } elseif (is_scalar($value)) {
+            return clean((string) $value, true);
+        }
+
+        return null;
     }
 
     public function int(string ...$keys): ?int
@@ -85,7 +107,7 @@ trait ApiTrait
         $url = $this->str(...$keys);
 
         try {
-            return $url ? $this->extractor->resolveUri($url) : null;
+            return $url !== null ? $this->extractor->resolveUri($url) : null;
         } catch (Throwable $error) {
             return null;
         }
@@ -94,13 +116,13 @@ trait ApiTrait
     public function time(string ...$keys): ?DateTime
     {
         $time = $this->str(...$keys);
-        $datetime = $time ? date_create($time) : null;
+        $datetime = $time !== null ? date_create($time) : null;
 
-        if (!$datetime && $time && ctype_digit($time)) {
+        if ($datetime === false && $time !== null && ctype_digit($time)) {
             $datetime = date_create_from_format('U', $time);
         }
 
-        return ($datetime && $datetime->getTimestamp() > 0) ? $datetime : null;
+        return ($datetime !== false && $datetime !== null && $datetime->getTimestamp() > 0) ? $datetime : null;
     }
 
     abstract protected function fetchData(): array;

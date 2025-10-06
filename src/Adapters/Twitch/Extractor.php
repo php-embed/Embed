@@ -7,6 +7,9 @@ use Embed\Extractor as Base;
 
 class Extractor extends Base
 {
+    /**
+     * @return array<string, \Embed\Detectors\Detector>
+     */
     public function createCustomDetectors(): array
     {
         return [

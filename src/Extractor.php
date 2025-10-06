@@ -66,7 +66,9 @@ class Extractor
     protected LinkedData $linkedData;
     protected Metas $metas;
 
+    /** @var array<string, mixed> */
     private array $settings = [];
+    /** @var array<string, Detectors\Detector> */
     private array $customDetectors = [];
 
     protected AuthorName $authorName;
@@ -124,17 +126,32 @@ class Extractor
         $this->url = new Url($this);
     }
 
+    /**
+     * @return mixed
+     */
     public function __get(string $name)
     {
-        $detector = $this->customDetectors[$name] ?? $this->$name ?? null;
+        $detector = $this->customDetectors[$name] ?? null;
 
-        if (!$detector || !($detector instanceof Detector)) {
+        if ($detector === null && property_exists($this, $name)) {
+            /** @var mixed $property */
+            /** @phpstan-ignore property.dynamicName */
+            $property = (fn($n) => $this->$n)($name);
+            if ($property instanceof Detector) {
+                $detector = $property;
+            }
+        }
+
+        if ($detector === null) {
             throw new DomainException(sprintf('Invalid key "%s". No detector found for this value', $name));
         }
 
         return $detector->get();
     }
 
+    /**
+     * @return array<string, Detector>
+     */
     public function createCustomDetectors(): array
     {
         return [];
@@ -145,16 +162,25 @@ class Extractor
         $this->customDetectors[$name] = $detector;
     }
 
+    /**
+     * @param array<string, mixed> $settings
+     */
     public function setSettings(array $settings): void
     {
         $this->settings = $settings;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getSettings(): array
     {
         return $this->settings;
     }
 
+    /**
+     * @return mixed
+     */
     public function getSetting(string $key)
     {
         return $this->settings[$key] ?? null;
@@ -206,10 +232,6 @@ class Extractor
             }
 
             $uri = $this->crawler->createUri($uri);
-        }
-
-        if (!($uri instanceof UriInterface)) {
-            throw new InvalidArgumentException('Uri must be a string or an instance of UriInterface');
         }
 
         return resolveUri($this->uri, $uri);

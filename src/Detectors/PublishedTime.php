@@ -13,34 +13,50 @@ class PublishedTime extends Detector
         $metas = $this->extractor->getMetas();
         $ld = $this->extractor->getLinkedData();
 
-        return $oembed->time('pubdate')
-            ?: $metas->time(
-                'article:published_time',
-                'created',
-                'date',
-                'datepublished',
-                'music:release_date',
-                'video:release_date',
-                'newsrepublic:publish_date'
-            )
-            ?: $ld->time(
-                'pagePublished',
-                'datePublished'
-            )
-            ?: $this->detectFromPath()
-            ?: $metas->time(
-                'pagerender',
-                'pub_date',
-                'publication-date',
-                'lp.article:published_time',
-                'lp.article:modified_time',
-                'publish-date',
-                'rc.datecreation',
-                'timestamp',
-                'sailthru.date',
-                'article:modified_time',
-                'dcterms.date'
-            );
+        $result = $oembed->time('pubdate');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $metas->time(
+            'article:published_time',
+            'created',
+            'date',
+            'datepublished',
+            'music:release_date',
+            'video:release_date',
+            'newsrepublic:publish_date'
+        );
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $ld->time(
+            'pagePublished',
+            'datePublished'
+        );
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $this->detectFromPath();
+        if ($result !== null) {
+            return $result;
+        }
+
+        return $metas->time(
+            'pagerender',
+            'pub_date',
+            'publication-date',
+            'lp.article:published_time',
+            'lp.article:modified_time',
+            'publish-date',
+            'rc.datecreation',
+            'timestamp',
+            'sailthru.date',
+            'article:modified_time',
+            'dcterms.date'
+        );
     }
 
     /**
@@ -51,8 +67,9 @@ class PublishedTime extends Detector
     {
         $path = $this->extractor->getUri()->getPath();
 
-        if (preg_match('#/(19|20)\d{2}/[0-1]?\d/[0-3]?\d/#', $path, $matches)) {
-            return date_create_from_format('/Y/m/d/', $matches[0]) ?: null;
+        if (preg_match('#/(19|20)\d{2}/[0-1]?\d/[0-3]?\d/#', $path, $matches) === 1) {
+            $date = date_create_from_format('/Y/m/d/', $matches[0]);
+            return $date !== false ? $date : null;
         }
 
         return null;

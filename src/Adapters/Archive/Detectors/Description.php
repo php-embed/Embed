@@ -3,15 +3,18 @@ declare(strict_types = 1);
 
 namespace Embed\Adapters\Archive\Detectors;
 
+use Embed\Adapters\Archive\Extractor;
 use Embed\Detectors\Description as Detector;
 
 class Description extends Detector
 {
     public function detect(): ?string
     {
-        $api = $this->extractor->getApi();
+        /** @var Extractor $extractor */
+        $extractor = $this->extractor;
+        $api = $extractor->getApi();
 
-        return $api->str('metadata', 'extract')
-            ?: parent::detect();
+        $result = $api->str('metadata', 'extract');
+        return (is_string($result) && trim($result) !== '') ? $result : parent::detect();
     }
 }

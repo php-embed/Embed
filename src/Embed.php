@@ -14,8 +14,8 @@ class Embed
 
     public function __construct(?Crawler $crawler = null, ?ExtractorFactory $extractorFactory = null)
     {
-        $this->crawler = $crawler ?: new Crawler();
-        $this->extractorFactory = $extractorFactory ?: new ExtractorFactory();
+        $this->crawler = $crawler !== null ? $crawler : new Crawler();
+        $this->extractorFactory = $extractorFactory !== null ? $extractorFactory : new ExtractorFactory();
     }
 
     public function get(string $url): Extractor
@@ -41,7 +41,10 @@ class Embed
         $return = [];
 
         foreach ($responses as $k => $response) {
-            $return[] = $this->extract($requests[$k], $responses[$k]);
+            /** @phpstan-ignore instanceof.alwaysTrue (defensive check for error handling) */
+            if ($response instanceof ResponseInterface) {
+                $return[] = $this->extract($requests[$k], $response);
+            }
         }
 
         return $return;
@@ -57,6 +60,9 @@ class Embed
         return $this->extractorFactory;
     }
 
+    /**
+     * @param array<string, mixed> $settings
+     */
     public function setSettings(array $settings): void
     {
         $this->extractorFactory->setSettings($settings);
@@ -64,7 +70,10 @@ class Embed
 
     private function extract(RequestInterface $request, ResponseInterface $response, bool $redirect = true): Extractor
     {
-        $uri = $this->crawler->getResponseUri($response) ?: $request->getUri();
+        $uri = $this->crawler->getResponseUri($response);
+        if ($uri === null) {
+            $uri = $request->getUri();
+        }
 
         $extractor = $this->extractorFactory->createExtractor($uri, $request, $response, $this->crawler);
 
@@ -72,7 +81,13 @@ class Embed
             return $extractor;
         }
 
-        $request = $this->crawler->createRequest('GET', $extractor->redirect);
+        // Magic property access returns mixed, but we know it's ?UriInterface from Redirect detector
+        $redirectUri = $extractor->redirect;
+        if (!($redirectUri instanceof \Psr\Http\Message\UriInterface)) {
+            return $extractor;
+        }
+
+        $request = $this->crawler->createRequest('GET', (string) $redirectUri);
         $response = $this->crawler->sendRequest($request);
 
         return $this->extract($request, $response, false);
@@ -80,10 +95,12 @@ class Embed
 
     private function mustRedirect(Extractor $extractor): bool
     {
-        if (!empty($extractor->getOembed()->all())) {
+        if ($extractor->getOEmbed()->all() !== []) {
             return false;
         }
 
-        return $extractor->redirect !== null;
+        // Magic property access returns mixed, but we know it's ?UriInterface from Redirect detector
+        $redirectUri = $extractor->redirect;
+        return $redirectUri instanceof \Psr\Http\Message\UriInterface;
     }
 }

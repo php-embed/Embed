@@ -14,16 +14,40 @@ class Image extends Detector
         $metas = $this->extractor->getMetas();
         $ld = $this->extractor->getLinkedData();
 
-        return $oembed->url('image')
-            ?: $oembed->url('thumbnail')
-            ?: $oembed->url('thumbnail_url')
-            ?: $metas->url('og:image', 'og:image:url', 'og:image:secure_url', 'twitter:image', 'twitter:image:src', 'lp:image')
-            ?: $document->link('image_src')
-            ?: $ld->url('image.url')
-            ?: $this->detectFromContentType();
+        $result = $oembed->url('image');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $oembed->url('thumbnail');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $oembed->url('thumbnail_url');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $metas->url('og:image', 'og:image:url', 'og:image:secure_url', 'twitter:image', 'twitter:image:src', 'lp:image');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $document->link('image_src');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $ld->url('image.url');
+        if ($result !== null) {
+            return $result;
+        }
+
+        return $this->detectFromContentType();
     }
 
-    private function detectFromContentType()
+    private function detectFromContentType(): ?\Psr\Http\Message\UriInterface
     {
         if (!$this->extractor->getResponse()->hasHeader('content-type')) {
             return null;
@@ -34,5 +58,7 @@ class Image extends Detector
         if (strpos($contentType, 'image/') === 0) {
             return $this->extractor->getUri();
         }
+
+        return null;
     }
 }

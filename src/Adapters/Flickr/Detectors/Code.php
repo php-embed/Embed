@@ -13,8 +13,12 @@ class Code extends Detector
 {
     public function detect(): ?EmbedCode
     {
-        return parent::detect()
-            ?: $this->fallback();
+        $result = parent::detect();
+        if ($result !== null) {
+            return $result;
+        }
+
+        return $this->fallback();
     }
 
     private function fallback(): ?EmbedCode

@@ -10,10 +10,22 @@ class Code extends Detector
 {
     public function detect(): ?EmbedCode
     {
-        return $this->detectFromEmbed()
-            ?: $this->detectFromOpenGraph()
-            ?: $this->detectFromTwitter()
-            ?: $this->detectFromContentType();
+        $result = $this->detectFromEmbed();
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $this->detectFromOpenGraph();
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $this->detectFromTwitter();
+        if ($result !== null) {
+            return $result;
+        }
+
+        return $this->detectFromContentType();
     }
 
     private function detectFromEmbed(): ?EmbedCode
@@ -21,7 +33,7 @@ class Code extends Detector
         $oembed = $this->extractor->getOEmbed();
         $html = $oembed->html('html');
 
-        if (!$html) {
+        if ($html === null) {
             return null;
         }
 
@@ -38,11 +50,12 @@ class Code extends Detector
 
         $url = $metas->url('og:video:secure_url', 'og:video:url', 'og:video');
 
-        if (!$url) {
+        if ($url === null) {
             return null;
         }
 
-        if (!($type = pathinfo($url->getPath(), PATHINFO_EXTENSION))) {
+        $type = pathinfo($url->getPath(), PATHINFO_EXTENSION);
+        if ($type === '') {
             $type = $metas->str('og:video_type');
         }
 
@@ -87,7 +100,7 @@ class Code extends Detector
 
         $url = $metas->url('twitter:player');
 
-        if (!$url) {
+        if ($url === null) {
             return null;
         }
 
@@ -105,14 +118,14 @@ class Code extends Detector
         return new EmbedCode($code, $width, $height);
     }
 
-    private function detectFromContentType()
+    private function detectFromContentType(): ?EmbedCode
     {
         if (!$this->extractor->getResponse()->hasHeader('content-type')) {
             return null;
         }
 
         $contentType = $this->extractor->getResponse()->getHeader('content-type')[0];
-        $isBinary = !preg_match('/(text|html|json)/', strtolower($contentType));
+        $isBinary = preg_match('/(text|html|json)/', strtolower($contentType)) !== 1;
         if (!$isBinary) {
             return null;
         }

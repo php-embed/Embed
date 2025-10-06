@@ -3,15 +3,18 @@ declare(strict_types = 1);
 
 namespace Embed\Adapters\ImageShack\Detectors;
 
+use Embed\Adapters\ImageShack\Extractor;
 use Embed\Detectors\AuthorName as Detector;
 
 class AuthorName extends Detector
 {
     public function detect(): ?string
     {
-        $api = $this->extractor->getApi();
+        /** @var Extractor $extractor */
+        $extractor = $this->extractor;
+        $api = $extractor->getApi();
 
-        return $api->str('owner', 'username')
-            ?: parent::detect();
+        $result = $api->str('owner', 'username');
+        return (is_string($result) && trim($result) !== '') ? $result : parent::detect();
     }
 }

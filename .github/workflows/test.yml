@@ -42,3 +42,29 @@ jobs:
 
             - name: Tests
               run: composer test
+
+    phpstan:
+        name: PHPStan Static Analysis
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Install PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.4
+
+            - name: Cache PHP dependencies
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: ${{ runner.os }}-php-8.4-composer-${{ hashFiles('**/composer.json') }}
+                  restore-keys: ${{ runner.os }}-php-8.4-composer-
+
+            - name: Install dependencies
+              run: composer install
+
+            - name: Run PHPStan
+              run: composer phpstan

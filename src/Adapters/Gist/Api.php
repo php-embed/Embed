@@ -9,6 +9,9 @@ class Api
 {
     use HttpApiTrait;
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $uri = $this->extractor->getUri();

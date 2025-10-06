@@ -5,6 +5,7 @@ namespace Embed\Detectors;
 
 class ProviderName extends Detector
 {
+    /** @var string[] */
     private static array $suffixes;
 
     public function detect(): string
@@ -12,14 +13,22 @@ class ProviderName extends Detector
         $oembed = $this->extractor->getOEmbed();
         $metas = $this->extractor->getMetas();
 
-        return $oembed->str('provider_name')
-            ?: $metas->str(
-                'og:site_name',
-                'dcterms.publisher',
-                'publisher',
-                'article:publisher'
-            )
-            ?: ucfirst($this->fallback());
+        $result = $oembed->str('provider_name');
+        if (is_string($result) && trim($result) !== '') {
+            return $result;
+        }
+
+        $result = $metas->str(
+            'og:site_name',
+            'dcterms.publisher',
+            'publisher',
+            'article:publisher'
+        );
+        if (is_string($result) && trim($result) !== '') {
+            return $result;
+        }
+
+        return ucfirst($this->fallback());
     }
 
     private function fallback(): string
@@ -45,10 +54,15 @@ class ProviderName extends Detector
         }
     }
 
+    /**
+     * @return string[]
+     */
     private static function getSuffixes(): array
     {
         if (!isset(self::$suffixes)) {
-            self::$suffixes = require dirname(__DIR__).'/resources/suffix.php';
+            /** @var string[] */
+            $suffixes = require dirname(__DIR__).'/resources/suffix.php';
+            self::$suffixes = $suffixes;
         }
 
         return self::$suffixes;

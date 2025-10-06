@@ -5,7 +5,8 @@ namespace Embed\Detectors;
 
 class Feeds extends Detector
 {
-    private static $types = [
+    /** @var string[] */
+    private static array $types = [
         'application/atom+xml',
         'application/json',
         'application/rdf+xml',
@@ -25,7 +26,7 @@ class Feeds extends Detector
         foreach (self::$types as $type) {
             $href = $document->link('alternate', ['type' => $type]);
 
-            if ($href) {
+            if ($href !== null) {
                 $feeds[] = $href;
             }
         }

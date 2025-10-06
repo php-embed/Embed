@@ -42,7 +42,9 @@
         "nyholm/psr7": "^1.2",
         "oscarotero/php-cs-fixer-config": "^1.0",
         "brick/varexporter": "^0.3.1",
-        "symfony/css-selector": "^5.0"
+        "symfony/css-selector": "^5.0",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-strict-rules": "^2.0"
     },
     "suggest": {
         "symfony/css-selector": "If you want to get elements using css selectors"
@@ -64,6 +66,7 @@
         "demo": "php -S localhost:8888 demo/index.php",
         "test": "phpunit",
         "cs-fix": "php-cs-fixer fix",
+        "phpstan": "phpstan --memory-limit=-1",
         "update-resources": [
             "php scripts/update-oembed.php",
             "php scripts/update-suffix.php"

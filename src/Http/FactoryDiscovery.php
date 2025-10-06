@@ -45,7 +45,9 @@ abstract class FactoryDiscovery
 
     public static function getRequestFactory(): RequestFactoryInterface
     {
-        if ($class = self::searchClass(self::REQUEST)) {
+        $class = self::searchClass(self::REQUEST);
+        if ($class !== null) {
+            /** @var RequestFactoryInterface */
             return new $class();
         }
 
@@ -54,7 +56,9 @@ abstract class FactoryDiscovery
 
     public static function getResponseFactory(): ResponseFactoryInterface
     {
-        if ($class = self::searchClass(self::RESPONSE)) {
+        $class = self::searchClass(self::RESPONSE);
+        if ($class !== null) {
+            /** @var ResponseFactoryInterface */
             return new $class();
         }
 
@@ -63,7 +67,9 @@ abstract class FactoryDiscovery
 
     public static function getUriFactory(): UriFactoryInterface
     {
-        if ($class = self::searchClass(self::URI)) {
+        $class = self::searchClass(self::URI);
+        if ($class !== null) {
+            /** @var UriFactoryInterface */
             return new $class();
         }
 
@@ -72,14 +78,19 @@ abstract class FactoryDiscovery
 
     public static function getStreamFactory(): StreamFactoryInterface
     {
-        if ($class = self::searchClass(self::STREAM)) {
+        $class = self::searchClass(self::STREAM);
+        if ($class !== null) {
+            /** @var StreamFactoryInterface */
             return new $class();
         }
 
         throw new RuntimeException('No StreamFactoryInterface detected');
     }
 
-    private static function searchClass($classes): ?string
+    /**
+     * @param string[] $classes
+     */
+    private static function searchClass(array $classes): ?string
     {
         foreach ($classes as $class) {
             if (class_exists($class)) {

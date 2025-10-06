@@ -19,7 +19,7 @@ class EmbedCode implements JsonSerializable
         $this->width = $width;
         $this->height = $height;
 
-        if ($width && $height) {
+        if ($width !== null && $width !== 0 && $height !== null && $height !== 0) {
             $this->ratio = round(($height / $width) * 100, 3);
         }
     }

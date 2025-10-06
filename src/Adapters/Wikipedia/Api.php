@@ -11,6 +11,9 @@ class Api
 {
     use HttpApiTrait;
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $uri = $this->extractor->getUri();
@@ -33,8 +36,17 @@ class Api
             ]));
 
         $data = $this->fetchJSON($this->endpoint);
-        $pages = $data['query']['pages'] ?? null;
 
-        return $pages ? current($pages) : null;
+        if (isset($data['query']) && is_array($data['query']) && isset($data['query']['pages']) && is_array($data['query']['pages'])) {
+            $pages = $data['query']['pages'];
+            $result = current($pages);
+            if (is_array($result)) {
+                /** @var array<string, mixed> */
+                $typedResult = $result;
+                return $typedResult;
+            }
+        }
+
+        return [];
     }
 }

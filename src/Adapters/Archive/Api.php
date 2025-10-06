@@ -9,6 +9,9 @@ class Api
 {
     use HttpApiTrait;
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $this->endpoint = $this->extractor->getUri()->withQuery('output=json');

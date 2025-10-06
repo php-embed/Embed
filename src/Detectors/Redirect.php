@@ -12,12 +12,12 @@ class Redirect extends Detector
         $document = $this->extractor->getDocument();
         $value = $document->select('.//meta', ['http-equiv' => 'refresh'])->str('content');
 
-        return $value ? $this->extract($value) : null;
+        return $value !== null ? $this->extract($value) : null;
     }
 
     private function extract(string $value): ?UriInterface
     {
-        if (preg_match('/url=(.+)$/i', $value, $match)) {
+        if (preg_match('/url=(.+)$/i', $value, $match) === 1) {
             return $this->extractor->resolveUri(trim($match[1], '\'"'));
         }
 

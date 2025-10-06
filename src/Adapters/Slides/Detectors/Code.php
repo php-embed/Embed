@@ -10,10 +10,10 @@ use function Embed\html;
 
 class Code extends Detector
 {
-    public function detect(): ?EmbedCode
+    public function detect(): EmbedCode
     {
-        return parent::detect()
-            ?: $this->fallback();
+        $result = parent::detect();
+        return $result !== null ? $result : $this->fallback();
     }
 
     private function fallback(): EmbedCode

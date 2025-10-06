@@ -11,17 +11,25 @@ class Title extends Detector
         $document = $this->extractor->getDocument();
         $metas = $this->extractor->getMetas();
 
-        return $oembed->str('title')
-            ?: $metas->str(
-                'og:title',
-                'twitter:title',
-                'lp:title',
-                'dcterms.title',
-                'article:title',
-                'headline',
-                'article.headline',
-                'parsely-title'
-            )
-            ?: $document->select('.//head/title')->str();
+        $result = $oembed->str('title');
+        if (is_string($result) && trim($result) !== '') {
+            return $result;
+        }
+
+        $result = $metas->str(
+            'og:title',
+            'twitter:title',
+            'lp:title',
+            'dcterms.title',
+            'article:title',
+            'headline',
+            'article.headline',
+            'parsely-title'
+        );
+        if (is_string($result) && trim($result) !== '') {
+            return $result;
+        }
+
+        return $document->select('.//head/title')->str();
     }
 }

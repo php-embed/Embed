@@ -12,9 +12,9 @@ class Cms extends Detector
 
     public function detect(): ?string
     {
-        $cms = self::detectFromHost($this->extractor->url->getHost());
+        $cms = self::detectFromHost($this->extractor->getUri()->getHost());
 
-        if ($cms) {
+        if ($cms !== null) {
             return $cms;
         }
 
@@ -22,7 +22,8 @@ class Cms extends Detector
         $generators = $document->select('.//meta', ['name' => 'generator'])->strAll('content');
 
         foreach ($generators as $generator) {
-            if ($cms = self::detectFromGenerator($generator)) {
+            $cms = self::detectFromGenerator($generator);
+            if ($cms !== null) {
                 return $cms;
             }
         }

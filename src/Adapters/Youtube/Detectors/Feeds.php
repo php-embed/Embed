@@ -15,10 +15,13 @@ class Feeds extends Detector
      */
     public function detect(): array
     {
-        return parent::detect()
-            ?: $this->fallback();
+        $result = parent::detect();
+        return $result !== [] ? $result : $this->fallback();
     }
 
+    /**
+     * @return UriInterface[]
+     */
     private function fallback(): array
     {
         $uri = $this->extractor->getUri();

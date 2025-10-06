@@ -7,16 +7,28 @@ class Metas
 {
     use ApiTrait;
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function fetchData(): array
     {
         $data = [];
         $document = $this->extractor->getDocument();
 
         foreach ($document->select('.//meta')->nodes() as $node) {
-            $type = $node->getAttribute('name') ?: $node->getAttribute('property') ?: $node->getAttribute('itemprop');
+            if (!($node instanceof \DOMElement)) {
+                continue;
+            }
+            $type = $node->getAttribute('name');
+            if ($type === '') {
+                $type = $node->getAttribute('property');
+            }
+            if ($type === '') {
+                $type = $node->getAttribute('itemprop');
+            }
             $value = $node->getAttribute('content');
 
-            if (!empty($value) && !empty($type)) {
+            if ($value !== '' && $type !== '') {
                 $type = strtolower($type);
                 $data[$type] ??= [];
                 $data[$type][] = $value;
@@ -26,6 +38,9 @@ class Metas
         return $data;
     }
 
+    /**
+     * @return mixed
+     */
     public function get(string ...$keys)
     {
         $data = $this->all();
@@ -33,7 +48,7 @@ class Metas
         foreach ($keys as $key) {
             $values = $data[$key] ?? null;
 
-            if ($values) {
+            if ($values !== null && $values !== '' && $values !== []) {
                 return $values;
             }
         }

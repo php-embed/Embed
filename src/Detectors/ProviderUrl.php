@@ -12,9 +12,17 @@ class ProviderUrl extends Detector
         $oembed = $this->extractor->getOEmbed();
         $metas = $this->extractor->getMetas();
 
-        return $oembed->url('provider_url')
-            ?: $metas->url('og:website')
-            ?: $this->fallback();
+        $result = $oembed->url('provider_url');
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = $metas->url('og:website');
+        if ($result !== null) {
+            return $result;
+        }
+
+        return $this->fallback();
     }
 
     private function fallback(): UriInterface

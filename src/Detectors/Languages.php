@@ -8,7 +8,7 @@ use function Embed\isEmpty;
 class Languages extends Detector
 {
     /**
-     * @return \Psr\Http\Message\UriInterface[]
+     * @return array<string, \Psr\Http\Message\UriInterface>
      */
     public function detect(): array
     {
@@ -16,6 +16,10 @@ class Languages extends Detector
         $languages = [];
 
         foreach ($document->select('.//link[@hreflang]')->nodes() as $node) {
+            if (!$node instanceof \DOMElement) {
+                continue;
+            }
+
             $language = $node->getAttribute('hreflang');
             $href = $node->getAttribute('href');
 

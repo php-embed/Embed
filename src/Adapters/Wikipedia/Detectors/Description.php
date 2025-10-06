@@ -3,15 +3,18 @@ declare(strict_types = 1);
 
 namespace Embed\Adapters\Wikipedia\Detectors;
 
+use Embed\Adapters\Wikipedia\Extractor;
 use Embed\Detectors\Description as Detector;
 
 class Description extends Detector
 {
     public function detect(): ?string
     {
-        $api = $this->extractor->getApi();
+        /** @var Extractor $extractor */
+        $extractor = $this->extractor;
+        $api = $extractor->getApi();
 
-        return $api->str('extract')
-            ?: parent::detect();
+        $result = $api->str('extract');
+        return (is_string($result) && trim($result) !== '') ? $result : parent::detect();
     }
 }

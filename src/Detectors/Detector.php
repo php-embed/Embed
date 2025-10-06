@@ -8,16 +8,20 @@ use Embed\Extractor;
 abstract class Detector
 {
     protected Extractor $extractor;
-    private array $cache;
+    /** @var array<string, mixed> */
+    private array $cache = [];
 
     public function __construct(Extractor $extractor)
     {
         $this->extractor = $extractor;
     }
 
+    /**
+     * @return mixed
+     */
     public function get()
     {
-        if (!isset($this->cache)) {
+        if (!isset($this->cache['cached'])) {
             $this->cache = [
                 'cached' => true,
                 'value' => $this->detect(),
@@ -27,5 +31,8 @@ abstract class Detector
         return $this->cache['value'];
     }
 
+    /**
+     * @return mixed
+     */
     abstract public function detect();
 }

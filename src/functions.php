@@ -14,10 +14,14 @@ function clean(string $value, bool $allowHTML = false): ?string
         $value = strip_tags($value);
     }
 
-    $value = trim(preg_replace('/\s+/u', ' ', $value));
+    $replaced = preg_replace('/\s+/u', ' ', $value);
+    $value = trim($replaced !== null ? $replaced : $value);
     return $value === '' ? null : $value;
 }
 
+/**
+ * @param array<string, mixed> $attributes
+ */
 function html(string $tagName, array $attributes, ?string $content = null): string
 {
     $html = "<{$tagName}";
@@ -28,7 +32,16 @@ function html(string $tagName, array $attributes, ?string $content = null): stri
         } elseif ($value === true) {
             $html .= " $name";
         } elseif ($value !== false) {
-            $html .= ' '.$name.'="'.htmlspecialchars((string) $value).'"';
+            if (is_string($value)) {
+                $stringValue = $value;
+            } elseif (is_scalar($value)) {
+                $stringValue = (string) $value;
+            } elseif (is_object($value) && method_exists($value, '__toString')) {
+                $stringValue = (string) $value;
+            } else {
+                $stringValue = '';
+            }
+            $html .= ' '.$name.'="'.htmlspecialchars($stringValue).'"';
         }
     }
 
@@ -47,11 +60,11 @@ function resolveUri(UriInterface $base, UriInterface $uri): UriInterface
 {
     $uri = $uri->withPath(resolvePath($base->getPath(), $uri->getPath()));
 
-    if (!$uri->getHost()) {
+    if ($uri->getHost() === '') {
         $uri = $uri->withHost($base->getHost());
     }
 
-    if (!$uri->getScheme()) {
+    if ($uri->getScheme() === '') {
         $uri = $uri->withScheme($base->getScheme());
     }
 
@@ -62,8 +75,9 @@ function resolveUri(UriInterface $base, UriInterface $uri): UriInterface
 
 function isHttp(string $uri): bool
 {
-    if (preg_match('/^(\w+):/', $uri, $matches)) {
-        return in_array(strtolower($matches[1]), ['http', 'https']);
+    $result = preg_match('/^(\w+):/', $uri, $matches);
+    if ($result !== false && $result > 0) {
+        return in_array(strtolower($matches[1]), ['http', 'https'], true);
     }
 
     return true;
@@ -81,20 +95,22 @@ function resolvePath(string $base, string $path): string
 
     if (substr($base, -1) !== '/') {
         $position = strrpos($base, '/');
-        $base = substr($base, 0, $position);
+        $base = $position !== false ? substr($base, 0, $position) : '';
     }
 
     $path = "{$base}/{$path}";
 
-    $parts = array_filter(explode('/', $path), 'strlen');
+    $parts = array_filter(explode('/', $path), static function (string $value): bool {
+        return strlen($value) > 0;
+    });
     $absolutes = [];
 
     foreach ($parts as $part) {
-        if ('.' == $part) {
+        if ('.' === $part) {
             continue;
         }
 
-        if ('..' == $part) {
+        if ('..' === $part) {
             array_pop($absolutes);
             continue;
         }
@@ -105,16 +121,23 @@ function resolvePath(string $base, string $path): string
     return implode('/', $absolutes);
 }
 
-function cleanPath(string $path): string
+function cleanPath(?string $path): string
 {
-    if ($path === '') {
+    if ($path === null || $path === '') {
         return '/';
     }
 
-    $path = preg_replace('|[/]{2,}|', '/', $path);
+    $cleanedPath = preg_replace('|[/]{2,}|', '/', $path);
+    if ($cleanedPath === null) {
+        return '/';
+    }
+    $path = $cleanedPath;
 
     if (strpos($path, ';jsessionid=') !== false) {
-        $path = preg_replace('/^(.*)(;jsessionid=.*)$/i', '$1', $path);
+        $cleanedPath = preg_replace('/^(.*)(;jsessionid=.*)$/i', '$1', $path);
+        if ($cleanedPath !== null) {
+            $path = $cleanedPath;
+        }
     }
 
     return $path;
@@ -147,7 +170,7 @@ function isEmpty(...$values): bool
     );
 
     foreach ($values as $value) {
-        if (empty($value) || in_array($value, $skipValues)) {
+        if ($value === null || $value === '' || $value === [] || $value === false || $value === 0 || $value === 0.0 || $value === '0' || in_array($value, $skipValues, true)) {
             return true;
         }
     }
@@ -160,7 +183,7 @@ if (!function_exists("array_is_list")) {
      * Polyfil for https://www.php.net/manual/en/function.array-is-list.php
      * which is only available in PHP 8.1+
      *
-     * @param      array  $array  The array
+     * @param      array<mixed, mixed>  $array  The array
      *
      * @return     bool
      */
