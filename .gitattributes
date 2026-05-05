@@ -9,3 +9,4 @@
 phpunit.xml.dist  export-ignore
 /tests/cache/4pda.to.2022-12-04-406834-sostoyalsya_reliz_clown_of_duty_parodii_na_call_of_duty.php working-tree-encoding=windows-1251 diff=windows-1251
 /tests/cache/www.itmedia.co.jp.news-articles-2410-28-news159.html.php working-tree-encoding=sjis diff=sjis
+/phpstan.dist.neon export-ignore
