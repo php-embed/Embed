@@ -42,6 +42,8 @@ jobs:
 
             - name: Tests
               run: composer test
+              env:
+                  EMBED_STRICT_CACHE: 1
 
     phpstan:
         name: PHPStan Static Analysis
