@@ -45,6 +45,7 @@ class OEmbed extends Base
         */
         if (strpos($path, '/video.php') === 0
             || strpos($path, '/videos/') !== false
+            || strpos($path, '/reel/') !== false
         ) {
             return self::ENDPOINT_VIDEO;
         }
