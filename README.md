@@ -1,3 +1,12 @@
+> [!IMPORTANT]
+>
+> # Searching for maintainer
+> After several years working on Embed, I don't have the time or motivation to continue maintaining this project. I rarely write PHP code and am not aware of the latest features of PHP. If anyone wants to continue maintaining and evolving this library, please open an issue or contact me.
+> 
+> Meanwhile, I'll continue accepting PR from the community (I don't want this project to die), but won't be actively working on improving it.
+> Thanks!
+
+
 # Embed
 
 
