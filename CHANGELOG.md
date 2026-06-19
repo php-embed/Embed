@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.4.18] - 2026-06-19
+### Added
+- Add PHPStan Static Analysis (Level Max + Strict Rules) [#562]
+- Add support for Facebook reel URLs [#572]
+- Update oEmbed endpoints [#574]
+
+### Changed
+- Make snapshot updates possible without modifying test code [#564]
+
+### Removed
+- Remove support for discontinued services (chirb.it and sassmeister.com) [#565]
+
+### Fixed
+- Add PHPStan generic type annotations and simplify detector implementations [#563]
+- Update fixtures to pass PHPUnit [#559]
+- wrong mb_encoding_aliases() handling for PHP 8.0+ [#560]
+- Remove calls to curl_close and curl_multi_close on PHP 8.0 and later [#569]
+- Add phpstan.dist.neon to export-ignore in .gitattributes [#571]
+
 ## [4.4.17] - 2025-05-13
 ### Fixed
 - Adapters hostname detection [#556].
@@ -264,7 +283,18 @@ Full library refactoring.
 [#553]: https://github.com/oscarotero/Embed/issues/553
 [#555]: https://github.com/oscarotero/Embed/issues/555
 [#556]: https://github.com/oscarotero/Embed/issues/556
+[#559]: https://github.com/oscarotero/Embed/issues/559
+[#560]: https://github.com/oscarotero/Embed/issues/560
+[#562]: https://github.com/oscarotero/Embed/issues/562
+[#563]: https://github.com/oscarotero/Embed/issues/563
+[#564]: https://github.com/oscarotero/Embed/issues/564
+[#565]: https://github.com/oscarotero/Embed/issues/565
+[#569]: https://github.com/oscarotero/Embed/issues/569
+[#571]: https://github.com/oscarotero/Embed/issues/571
+[#572]: https://github.com/oscarotero/Embed/issues/572
+[#574]: https://github.com/oscarotero/Embed/issues/574
 
+[4.4.18]: https://github.com/oscarotero/Embed/compare/v4.4.17...v4.4.18
 [4.4.17]: https://github.com/oscarotero/Embed/compare/v4.4.16...v4.4.17
 [4.4.16]: https://github.com/oscarotero/Embed/compare/v4.4.15...v4.4.16
 [4.4.15]: https://github.com/oscarotero/Embed/compare/v4.4.14...v4.4.15
