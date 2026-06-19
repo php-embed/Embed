@@ -116,13 +116,13 @@ trait ApiTrait
     public function time(string ...$keys): ?DateTime
     {
         $time = $this->str(...$keys);
-        $datetime = $time !== null ? date_create($time) : null;
+        $datetime = $time !== null ? date_create($time) : false;
 
         if ($datetime === false && $time !== null && ctype_digit($time)) {
             $datetime = date_create_from_format('U', $time);
         }
 
-        return ($datetime !== false && $datetime !== null && $datetime->getTimestamp() > 0) ? $datetime : null;
+        return ($datetime !== false && $datetime->getTimestamp() > 0) ? $datetime : null;
     }
 
     abstract protected function fetchData(): array;
