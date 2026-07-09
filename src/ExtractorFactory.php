@@ -32,6 +32,7 @@ class ExtractorFactory
         'bandcamp.com' => Adapters\Bandcamp\Extractor::class,
         'twitter.com' => Adapters\Twitter\Extractor::class,
         'x.com' => Adapters\Twitter\Extractor::class,
+        'tidal.com' => Adapters\Tidal\Extractor::class,
     ];
     /** @var array<string, class-string<Detectors\Detector<Extractor>>> */
     private array $customDetectors = [];
