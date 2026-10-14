@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Embed;
 
+use Embed\Http\BlockedRequestException;
 use Exception;
 use Psr\Http\Message\UriInterface;
 use SimpleXMLElement;
@@ -58,7 +59,11 @@ class OEmbed
 
         $crawler = $this->extractor->getCrawler();
         $request = $crawler->createRequest('GET', $this->endpoint);
-        $response = $crawler->sendRequest($request);
+        try {
+            $response = $crawler->sendRequest($request);
+        } catch (BlockedRequestException $exception) {
+            return [];
+        }
 
         if (self::isXML($request->getUri())) {
             return $this->extractXML((string) $response->getBody());

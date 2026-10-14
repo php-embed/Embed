@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Embed;
 
+use Embed\Http\BlockedRequestException;
 use Embed\Http\Crawler;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -88,7 +89,11 @@ class Embed
         }
 
         $request = $this->crawler->createRequest('GET', (string) $redirectUri);
-        $response = $this->crawler->sendRequest($request);
+        try {
+            $response = $this->crawler->sendRequest($request);
+        } catch (BlockedRequestException $exception) {
+            return $extractor;
+        }
 
         return $this->extract($request, $response, false);
     }

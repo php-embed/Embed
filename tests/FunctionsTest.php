@@ -4,6 +4,8 @@ declare(strict_types = 1);
 namespace Embed\Tests;
 
 use function Embed\isHttp;
+use function Embed\resolveUri;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 
 class FunctionsTest extends TestCase
@@ -31,5 +33,23 @@ class FunctionsTest extends TestCase
     {
         $result = isHttp($url);
         $this->assertSame($expected, $result);
+    }
+
+    public function testResolveUriKeepsTheBasePort(): void
+    {
+        $factory = new Psr17Factory();
+        $base = $factory->createUri('http://h:8080/a/b');
+
+        $absolute = resolveUri($base, $factory->createUri('/x'));
+        $this->assertSame('http://h:8080/x', (string) $absolute);
+
+        $relative = resolveUri($base, $factory->createUri('c'));
+        $this->assertSame('http://h:8080/a/c', (string) $relative);
+
+        $protocolRelative = resolveUri($base, $factory->createUri('//cdn.example/favicon.ico'));
+        $this->assertSame('http://cdn.example/favicon.ico', (string) $protocolRelative);
+
+        $other = resolveUri($base, $factory->createUri('https://other.example:9/z'));
+        $this->assertSame('https://other.example:9/z', (string) $other);
     }
 }

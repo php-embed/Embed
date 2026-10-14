@@ -15,6 +15,7 @@ class Crawler implements ClientInterface, RequestFactoryInterface, UriFactoryInt
     private RequestFactoryInterface $requestFactory;
     private UriFactoryInterface $uriFactory;
     private ClientInterface $client;
+    private UrlPolicy $urlPolicy;
     /** @var array<string, string> */
     private array $defaultHeaders = [
         'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:73.0) Gecko/20100101 Firefox/73.0',
@@ -26,6 +27,25 @@ class Crawler implements ClientInterface, RequestFactoryInterface, UriFactoryInt
         $this->client = $client !== null ? $client : new CurlClient();
         $this->requestFactory = $requestFactory !== null ? $requestFactory : FactoryDiscovery::getRequestFactory();
         $this->uriFactory = $uriFactory !== null ? $uriFactory : FactoryDiscovery::getUriFactory();
+        $this->urlPolicy = $this->client instanceof CurlClient ? $this->client->getUrlPolicy() : UrlPolicy::default();
+    }
+
+    /**
+     * The policy is copied onto the HTTP client only when that client is
+     * exactly CurlClient. A decorator around CurlClient is not detected;
+     * set the policy on the inner client as well.
+     */
+    public function setUrlPolicy(UrlPolicy $urlPolicy): void
+    {
+        $this->urlPolicy = $urlPolicy;
+        if ($this->client instanceof CurlClient) {
+            $this->client->setUrlPolicy($urlPolicy);
+        }
+    }
+
+    public function getUrlPolicy(): UrlPolicy
+    {
+        return $this->urlPolicy;
     }
 
     /**
@@ -57,6 +77,8 @@ class Crawler implements ClientInterface, RequestFactoryInterface, UriFactoryInt
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
+        $this->validateCustomClient($request);
+
         return $this->client->sendRequest($request);
     }
 
@@ -69,10 +91,23 @@ class Crawler implements ClientInterface, RequestFactoryInterface, UriFactoryInt
             return $this->client->sendRequests(...$requests);
         }
 
+        foreach ($requests as $request) {
+            $this->urlPolicy->validate($request);
+        }
+
         return array_map(
             fn ($request) => $this->client->sendRequest($request),
             $requests
         );
+    }
+
+    private function validateCustomClient(RequestInterface $request): void
+    {
+        if ($this->client instanceof CurlClient) {
+            return;
+        }
+
+        $this->urlPolicy->validate($request);
     }
 
     public function getResponseUri(ResponseInterface $response): ?UriInterface
