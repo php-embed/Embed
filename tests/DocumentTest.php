@@ -5,6 +5,7 @@ namespace Embed\Tests;
 
 use Embed\Embed;
 use Embed\Http\Crawler;
+use Embed\Http\UrlPolicy;
 use PHPUnit\Framework\TestCase;
 
 class DocumentTest extends TestCase
@@ -19,8 +20,12 @@ class DocumentTest extends TestCase
 
         $dispatcher = new FileClient(__DIR__.'/cache');
         $dispatcher->setMode(0);
+        $crawler = new Crawler($dispatcher);
+        $crawler->setUrlPolicy(UrlPolicy::default()->withResolver(static function (string $host): array {
+            return ['8.8.8.8'];
+        }));
 
-        return self::$embed = new Embed(new Crawler($dispatcher));
+        return self::$embed = new Embed($crawler);
     }
 
     public function testSelectors()

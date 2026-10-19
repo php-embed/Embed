@@ -329,12 +329,12 @@ $client = new CurlClient();
 $client->setSettings([
     'cookies_path' => $cookies_path,
     'ignored_errors' => [18],
-    'max_redirs' => 3,               // see CURLOPT_MAXREDIRS
-    'connect_timeout' => 2,          // see CURLOPT_CONNECTTIMEOUT
-    'timeout' => 2,                  // see CURLOPT_TIMEOUT
-    'ssl_verify_host' => 2,          // see CURLOPT_SSL_VERIFYHOST
-    'ssl_verify_peer' => 1,          // see CURLOPT_SSL_VERIFYPEER
-    'follow_location' => true,       // see CURLOPT_FOLLOWLOCATION
+    'max_redirs' => 3,               // redirects to follow; a negative value means up to 50
+    'connect_timeout' => 2,          // per connection, see CURLOPT_CONNECTTIMEOUT
+    'timeout' => 2,                  // total seconds for the request, including redirects
+    'ssl_verify_host' => 2,          // 0 disables hostname checks; any other value enables them
+    'ssl_verify_peer' => 1,          // falsy disables certificate checks; any other value enables them
+    'follow_location' => true,       // false returns the 3xx; each hop is checked
     'user_agent' => 'Mozilla',       // see CURLOPT_USERAGENT
 ]);
 
@@ -358,6 +358,89 @@ $info = $embed->get($url);
 ```
 
 Note: The built-in detectors does not require settings. This feature is only for convenience if you create a specific detector that requires settings.
+
+## Security / SSRF protection
+
+The default HTTP client refuses to connect to non-public addresses. That covers the URL you pass to `get()` / `getMulti()` and every later request Embed makes itself (redirects, oEmbed endpoints declared by the page, adapter APIs, and meta-refresh targets). A hostname is allowed only when every IPv4 address it resolves to is public. Loopback, private, link-local, CGNAT, documentation, and multicast ranges are rejected. IPv4-mapped IPv6, NAT64, and 6to4 are rejected when the embedded IPv4 address is not public. The Teredo prefix `2001::/32` is rejected as a whole, not by reading an address out of it. Only `http` and `https` are allowed, and redirects are followed inside Embed so each hop is checked the same way.
+
+`follow_location` set to false still returns the 3xx response. `max_redirs` is still how many redirects are followed (10 by default). A negative value, which curl treated as unlimited, follows at most 50. `timeout` is the total time for the request and its redirects; `connect_timeout` is still per connection. `ssl_verify_host` of `0` disables hostname checks, and any other value enables them, as curl does when it receives `1` or `true`. `ssl_verify_peer` is off only for a falsy value (`0`, `false`, `'0'`, `''`); `1`, `2`, `'true'` and `'yes'` keep certificate checks on. Reaching the redirect limit still fails with curl error 47. The message is `Number of redirects hit maximum amount`.
+
+This is a behavior change: a URL that used to be fetched from an intranet now throws `Embed\Http\BlockedRequestException`. To opt back in:
+
+```php
+use Embed\Http\UrlPolicy;
+
+$embed->getCrawler()->setUrlPolicy(
+    UrlPolicy::default()->allowPrivateNetworks()
+);
+```
+
+You can allow specific names without opening every private network. `*.corp` matches any host that ends in `.corp`. Allowing one resolved address does not allow the other addresses returned for that name:
+
+```php
+$embed->getCrawler()->setUrlPolicy(
+    UrlPolicy::default()->withAllowedHosts('wiki.corp', '*.corp')
+);
+```
+
+`withAllowedPorts([80, 443])` is optional. When it is set, an omitted port counts as 80 or 443. Internationalized host names are converted with `idn_to_ascii()`, which needs the `intl` extension; without it those hosts are rejected. The built-in client pins the punycode form, because that is the name libcurl looks up.
+
+Values such as `image` or `favicon` are URLs extracted from the page. Embed does not download them, so it does not apply this policy to them. Check one before you fetch it yourself:
+
+```php
+$policy = $embed->getCrawler()->getUrlPolicy();
+$image = $info->image;
+
+if ($image !== null) {
+    $policy->validate($embed->getCrawler()->createRequest('GET', (string) $image));
+}
+```
+
+A page-declared oEmbed endpoint, adapter API, or meta-refresh target that the policy rejects is skipped, and extraction continues with the rest of the page. The URL passed to `get()` or `getMulti()` is not skipped: that request throws. In `getMulti()`, one rejected URL rejects the whole batch before any request is sent. A redirect discovered after the batch has started is checked on the same thread, including its DNS lookup, so the other transfers in that batch wait until the check returns.
+
+`Crawler::setUrlPolicy()` copies the policy onto the client only when that client is exactly `Embed\Http\CurlClient`. A decorator or other wrapper around `CurlClient` is not updated. Call `setUrlPolicy()` on the inner client as well. Otherwise the wrapper is pre-checked with the crawler's policy, and the inner client keeps the policy it already had.
+
+### Custom PSR-18 clients
+
+If you pass your own PSR-18 client, Embed validates the URI before calling it and does not validate again inside that client. Two things are then outside Embed's control:
+
+* DNS can change between the check and the connection (rebinding).
+* Redirects followed by the client are not checked, unless the client gives you a hook.
+
+The built-in curl client pins the validated addresses with `CURLOPT_RESOLVE` and follows redirects itself, so those gaps do not apply to it. With Guzzle you can repeat the check on each redirect:
+
+```php
+use Embed\Http\UrlPolicy;
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
+
+$policy = UrlPolicy::default();
+$stack = HandlerStack::create();
+$stack->push(Middleware::mapRequest(function (RequestInterface $request) use ($policy) {
+    $policy->validate($request);
+
+    return $request;
+}));
+
+$client = new Client([
+    'handler' => $stack,
+    'allow_redirects' => [
+        'on_redirect' => function (RequestInterface $request, ResponseInterface $response, UriInterface $uri) use ($policy): void {
+            $policy->validate($request->withUri($uri));
+        },
+    ],
+]);
+```
+
+Even that hook cannot see the address the client actually connected to. Prefer the built-in client when the pages are untrusted.
+
+### Proxies
+
+If `http_proxy`, `https_proxy`, or `all_proxy` is set, curl connects to the proxy and the proxy resolves the origin. Embed still validates each URL before requesting it, and still checks redirects, but it cannot pin DNS or verify the address the proxy used. Point those variables only at a proxy you trust.
 
 ---
 

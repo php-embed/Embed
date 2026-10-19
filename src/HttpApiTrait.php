@@ -24,7 +24,11 @@ trait HttpApiTrait
     {
         $crawler = $this->extractor->getCrawler();
         $request = $crawler->createRequest('GET', $uri);
-        $response = $crawler->sendRequest($request);
+        try {
+            $response = $crawler->sendRequest($request);
+        } catch (\Embed\Http\BlockedRequestException $exception) {
+            return [];
+        }
 
         try {
             $data = json_decode((string) $response->getBody(), true);

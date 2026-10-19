@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Security
+- Block requests to non-public addresses before they are sent, including redirects, page-declared oEmbed endpoints, adapter APIs, and meta-refresh targets. Private and loopback URLs are rejected unless `UrlPolicy::allowPrivateNetworks()` or `withAllowedHosts()` is used [#573]
+
+### Added
+- `Embed\Http\UrlPolicy` and `Embed\Http\BlockedRequestException`, configurable from `Crawler::setUrlPolicy()`
+
+### Changed
+- A negative `max_redirs`, which curl treated as unlimited, now follows at most 50 redirects
+- Reaching that limit is still curl error 47. The message is `Number of redirects hit maximum amount` rather than curl's `Maximum (N) redirects followed`
+
+### Fixed
+- `resolveUri()` dropped the port of the base URL
+- Read every `curl_multi_info_read` message in the parallel client instead of only one per iteration
+
 ## [4.4.19] - 2026-07-08
 ### Changed
 - Access tokens are now optional with Meta (Facebook & Instagram) [#577]
@@ -299,6 +314,7 @@ Full library refactoring.
 [#569]: https://github.com/oscarotero/Embed/issues/569
 [#571]: https://github.com/oscarotero/Embed/issues/571
 [#572]: https://github.com/oscarotero/Embed/issues/572
+[#573]: https://github.com/oscarotero/Embed/issues/573
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 

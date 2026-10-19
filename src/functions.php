@@ -61,7 +61,7 @@ function resolveUri(UriInterface $base, UriInterface $uri): UriInterface
     $uri = $uri->withPath(resolvePath($base->getPath(), $uri->getPath()));
 
     if ($uri->getHost() === '') {
-        $uri = $uri->withHost($base->getHost());
+        $uri = $uri->withHost($base->getHost())->withPort($base->getPort());
     }
 
     if ($uri->getScheme() === '') {

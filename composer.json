@@ -47,6 +47,7 @@
         "phpstan/phpstan-strict-rules": "^2.0"
     },
     "suggest": {
+        "ext-intl": "To resolve internationalized domain names when protecting against SSRF",
         "symfony/css-selector": "If you want to get elements using css selectors"
     },
     "autoload": {

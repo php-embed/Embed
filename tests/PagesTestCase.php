@@ -9,6 +9,7 @@ use Embed\Embed;
 use Embed\Extractor;
 use Embed\ExtractorFactory;
 use Embed\Http\Crawler;
+use Embed\Http\UrlPolicy;
 use JsonSerializable;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\UriInterface;
@@ -109,8 +110,14 @@ abstract class PagesTestCase extends TestCase
 
         $dispatcher = new FileClient(__DIR__.'/cache');
         $dispatcher->setMode(self::getCacheMode());
+        $crawler = new Crawler($dispatcher);
+        // Cached fixtures must not depend on live DNS. Dead hosts such as
+        // ustream and viddler would otherwise fail closed as NXDOMAIN.
+        $crawler->setUrlPolicy(UrlPolicy::default()->withResolver(static function (string $host): array {
+            return ['8.8.8.8'];
+        }));
 
-        return self::$embed = new Embed(new Crawler($dispatcher), self::getExtractorFactory());
+        return self::$embed = new Embed($crawler, self::getExtractorFactory());
     }
 
     protected function assertEmbed(string $url)

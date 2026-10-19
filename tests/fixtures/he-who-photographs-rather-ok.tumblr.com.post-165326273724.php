@@ -30,7 +30,7 @@ return [
     'license' => null,
     'providerName' => 'Tumblr',
     'providerUrl' => 'https://www.tumblr.com/',
-    'publishedTime' => null,
+    'publishedTime' => '2017-09-14 10:20:35',
     'redirect' => null,
     'title' => 'He-who-photographs-rather-OK',
     'url' => 'https://www.tumblr.com/he-who-photographs-rather-ok/165326273724',
