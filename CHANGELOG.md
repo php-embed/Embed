@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.5.0] - 2026-10-19
 ### Security
 - Block requests to non-public addresses before they are sent, including redirects, page-declared oEmbed endpoints, adapter APIs, and meta-refresh targets. Private and loopback URLs are rejected unless `UrlPolicy::allowPrivateNetworks()` or `withAllowedHosts()` is used [#573]
 
@@ -318,6 +318,7 @@ Full library refactoring.
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.5.0]: https://github.com/php-embed/Embed/compare/v4.4.19...v4.5.0
 [4.4.19]: https://github.com/oscarotero/Embed/compare/v4.4.18...v4.4.19
 [4.4.18]: https://github.com/oscarotero/Embed/compare/v4.4.17...v4.4.18
 [4.4.17]: https://github.com/oscarotero/Embed/compare/v4.4.16...v4.4.17
