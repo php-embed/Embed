@@ -192,6 +192,8 @@ $oembed = $info->getOEmbed();
 
 Another API available by default, used to extract info using the [JsonLD](https://www.w3.org/TR/json-ld/) schema.
 
+Remote `@context` URLs are never fetched. schema.org contexts (`schema.org`, `www.schema.org`, and `schema.googleapis.com`, with or without a trailing slash, `.jsonld`, or `docs/jsonldcontext.json`) are read from a bundled vocabulary. Any other remote context is skipped and extraction continues with the rest of the page.
+
 ```php
 //Get the linkedData object
 $ld = $info->getLinkedData();
@@ -361,7 +363,7 @@ Note: The built-in detectors does not require settings. This feature is only for
 
 ## Security / SSRF protection
 
-The default HTTP client refuses to connect to non-public addresses. That covers the URL you pass to `get()` / `getMulti()` and every later request Embed makes itself (redirects, oEmbed endpoints declared by the page, adapter APIs, and meta-refresh targets). A hostname is allowed only when every IPv4 address it resolves to is public. Loopback, private, link-local, CGNAT, documentation, and multicast ranges are rejected. IPv4-mapped IPv6, NAT64, and 6to4 are rejected when the embedded IPv4 address is not public. The Teredo prefix `2001::/32` is rejected as a whole, not by reading an address out of it. Only `http` and `https` are allowed, and redirects are followed inside Embed so each hop is checked the same way.
+The default HTTP client refuses to connect to non-public addresses. That covers the URL you pass to `get()` / `getMulti()` and every later request Embed makes itself (redirects, oEmbed endpoints declared by the page, adapter APIs, and meta-refresh targets). A hostname is allowed only when every IPv4 address it resolves to is public. Loopback, private, link-local, CGNAT, documentation, and multicast ranges are rejected. IPv4-mapped IPv6, NAT64, and 6to4 are rejected when the embedded IPv4 address is not public. The Teredo prefix `2001::/32` is rejected as a whole, not by reading an address out of it. Only `http` and `https` are allowed, and redirects are followed inside Embed so each hop is checked the same way. JSON-LD `@context` URLs are not requested at all.
 
 `follow_location` set to false still returns the 3xx response. `max_redirs` is still how many redirects are followed (10 by default). A negative value, which curl treated as unlimited, follows at most 50. `timeout` is the total time for the request and its redirects; `connect_timeout` is still per connection. `ssl_verify_host` of `0` disables hostname checks, and any other value enables them, as curl does when it receives `1` or `true`. `ssl_verify_peer` is off only for a falsy value (`0`, `false`, `'0'`, `''`); `1`, `2`, `'true'` and `'yes'` keep certificate checks on. Reaching the redirect limit still fails with curl error 47. The message is `Number of redirects hit maximum amount`.
 
