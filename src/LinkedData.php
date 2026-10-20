@@ -3,8 +3,8 @@ declare(strict_types = 1);
 
 namespace Embed;
 
+use Embed\JsonLd\DocumentLoader;
 use Exception;
-use ML\JsonLD\JsonLD;
 use ML\JsonLD\Document as LdDocument;
 use ML\JsonLD\DocumentInterface;
 use ML\JsonLD\GraphInterface;
@@ -66,14 +66,26 @@ class LinkedData
                 if ($encoded === false) {
                     $encoded = '{}';
                 }
-                $this->document = LdDocument::load($encoded);
+                $this->document = self::loadJsonLd($encoded);
             } catch (Throwable $throwable) {
-                $this->document = LdDocument::load('{}');
+                try {
+                    $this->document = self::loadJsonLd('{}');
+                } catch (Throwable $ignored) {
+                    $this->document = new LdDocument();
+                }
+
                 return null;
             }
         }
 
         return $this->document->getGraph($name);
+    }
+
+    private static function loadJsonLd(string $json): DocumentInterface
+    {
+        return LdDocument::load($json, [
+            'documentLoader' => new DocumentLoader(),
+        ]);
     }
 
     /**
