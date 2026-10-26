@@ -5,7 +5,12 @@ return [
     'authorName' => 'pachunka',
     'authorUrl' => 'https://www.deviantart.com/pachunka',
     'cms' => null,
-    'code' => null,
+    'code' => [
+        'html' => '<img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2b5a457d-dde7-459a-badf-774e8e506025/d2enxz7-431ca9c3-987f-4b2d-ae6a-cbbdd1c0e2bf.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzJiNWE0NTdkLWRkZTctNDU5YS1iYWRmLTc3NGU4ZTUwNjAyNVwvZDJlbnh6Ny00MzFjYTljMy05ODdmLTRiMmQtYWU2YS1jYmJkZDFjMGUyYmYuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.pCEF4M_tMVZI92ZKClZdcMu5UqpQ3131DrHsx1WxefY" alt="Cope" width="448" height="672" />',
+        'width' => 448,
+        'height' => 672,
+        'ratio' => 150.0
+    ],
     'description' => null,
     'favicon' => 'https://st.deviantart.net/eclipse/icons/da_favicon_v2.ico',
     'feeds' => [],
