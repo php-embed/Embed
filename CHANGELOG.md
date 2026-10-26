@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.5.1] - 2026-10-26
 ### Security
 - JSON-LD remote contexts are never fetched. A page-supplied `@context` is not requested, so it cannot bypass the URL policy or follow redirects. schema.org contexts are resolved from a bundled vocabulary; any other remote context is skipped [#573]
 
@@ -322,7 +322,7 @@ Full library refactoring.
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
-[Unreleased]: https://github.com/php-embed/Embed/compare/v4.5.0...HEAD
+[4.5.1]: https://github.com/php-embed/Embed/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/php-embed/Embed/compare/v4.4.19...v4.5.0
 [4.4.19]: https://github.com/oscarotero/Embed/compare/v4.4.18...v4.4.19
 [4.4.18]: https://github.com/oscarotero/Embed/compare/v4.4.17...v4.4.18
