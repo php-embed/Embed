@@ -12,6 +12,8 @@ use function Embed\html;
  */
 class Code extends Detector
 {
+    private const HLS_TYPES = ['application/x-mpegurl', 'application/vnd.apple.mpegurl'];
+
     public function detect(): ?EmbedCode
     {
         $result = $this->detectFromEmbed();
@@ -90,13 +92,23 @@ class Code extends Detector
             $type = $metas->str('og:video_type');
         }
 
+        // HLS playlists cannot be used as an iframe src. og:video:type is only
+        // read for this check, so existing pages keep their current code.
+        $declaredType = strtolower((string) $metas->str('og:video:type'));
+        if (strtolower($type ?? '') === 'm3u8' || in_array($declaredType, self::HLS_TYPES, true)) {
+            return null;
+        }
+
         $width = $metas->int('twitter:player:width');
         $height = $metas->int('twitter:player:height');
 
-        switch ($type) {
+        switch ($type !== null ? strtolower($type) : null) {
             case 'swf':
             case 'application/x-shockwave-flash':
                 return null; //Ignore flash
+            case 'application/x-mpegurl':
+            case 'application/vnd.apple.mpegurl':
+                return null; //HLS playlists cannot be used as an iframe src
             case 'mp4':
             case 'ogg':
             case 'ogv':
