@@ -248,6 +248,37 @@ class CurlClientTest extends TestCase
         $this->assertSame(200, $within->getStatusCode());
     }
 
+    public function testSslVerificationIsOnByDefault(): void
+    {
+        $tls = $this->startTlsServer();
+
+        try {
+            $url = 'https://allowed.test:'.$tls['port'].'/';
+            $cases = [
+                'no settings' => [],
+                'null settings' => ['ssl_verify_host' => null, 'ssl_verify_peer' => null],
+                'only host disabled' => ['ssl_verify_host' => 0],
+            ];
+
+            foreach ($cases as $name => $settings) {
+                try {
+                    $this->client($settings)->sendRequest($this->request($url));
+                    $this->fail('A self-signed certificate must be rejected with '.$name);
+                } catch (NetworkException $exception) {
+                    $this->assertSame(60, $exception->getCode(), $name);
+                }
+            }
+
+            $response = $this->client([
+                'ssl_verify_host' => 0,
+                'ssl_verify_peer' => false,
+            ])->sendRequest($this->request($url));
+            $this->assertSame(200, $response->getStatusCode(), 'explicitly disabled');
+        } finally {
+            $this->stopTlsServer($tls);
+        }
+    }
+
     public function testSslVerifyHostTruthyValuesKeepHostnameChecks(): void
     {
         $tls = $this->startTlsServer();
@@ -300,7 +331,7 @@ class CurlClientTest extends TestCase
 
         try {
             $url = 'https://allowed.test:'.$tls['port'].'/';
-            foreach ([0, false, '0', '', null] as $disabled) {
+            foreach ([0, false, '0', ''] as $disabled) {
                 $response = $this->client([
                     'ssl_verify_host' => 0,
                     'ssl_verify_peer' => $disabled,
