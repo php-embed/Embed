@@ -9,7 +9,7 @@
         "embed",
         "embedly"
     ],
-    "homepage": "https://github.com/oscarotero/Embed",
+    "homepage": "https://github.com/php-embed/Embed",
     "license": "MIT",
     "authors": [
         {
@@ -21,7 +21,8 @@
     ],
     "support": {
         "email": "oom@oscarotero.com",
-        "issues": "https://github.com/oscarotero/Embed/issues"
+        "issues": "https://github.com/php-embed/Embed/issues",
+        "source": "https://github.com/php-embed/Embed"
     },
     "require": {
         "php": "^7.4|^8",
@@ -30,7 +31,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "composer/ca-bundle": "^1.0",
-        "oscarotero/html-parser": "^0.1.4",
+        "oscarotero/html-parser": "^0.1.6",
         "psr/http-message": "^1.0|^2.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.0",

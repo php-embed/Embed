@@ -5,21 +5,36 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
     tests:
-        name: Tests
+        name: Tests (PHP ${{ matrix.php }}, ${{ matrix.dependency-versions }})
         runs-on: ubuntu-latest
 
         strategy:
+            fail-fast: false
             matrix:
               php:
-                - 7.4
-                - 8.0
-                - 8.1
-                - 8.2
-                - 8.3
-                - 8.4
+                - "7.4"
+                - "8.0"
+                - "8.1"
+                - "8.2"
+                - "8.3"
+                - "8.4"
+                - "8.5"
+              dependency-versions:
+                - highest
+              include:
+                - php: "7.4"
+                  dependency-versions: lowest
 
         steps:
             - name: Checkout
@@ -29,16 +44,40 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
+                  coverage: none
 
-            - name: Cache PHP dependencies
-              uses: actions/cache@v6
-              with:
-                  path: vendor
-                  key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
-                  restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-composer-
+            - name: Validate composer.json
+              run: composer validate --strict
 
             - name: Install dependencies
-              run: composer install
+              uses: ramsey/composer-install@v4
+              with:
+                  dependency-versions: ${{ matrix.dependency-versions }}
+
+            - name: Tests
+              run: composer test
+              env:
+                  EMBED_STRICT_CACHE: 1
+
+    nightly:
+        name: Tests (PHP 8.6 nightly, allowed to fail)
+        runs-on: ubuntu-latest
+        continue-on-error: true
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.6"
+                  coverage: none
+
+            - name: Install dependencies
+              uses: ramsey/composer-install@v4
+              with:
+                  composer-options: --ignore-platform-req=php+
 
             - name: Tests
               run: composer test
@@ -56,17 +95,11 @@ jobs:
             - name: Install PHP
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: 8.4
-
-            - name: Cache PHP dependencies
-              uses: actions/cache@v6
-              with:
-                  path: vendor
-                  key: ${{ runner.os }}-php-8.4-composer-${{ hashFiles('**/composer.json') }}
-                  restore-keys: ${{ runner.os }}-php-8.4-composer-
+                  php-version: "8.5"
+                  coverage: none
 
             - name: Install dependencies
-              run: composer install
+              uses: ramsey/composer-install@v4
 
             - name: Run PHPStan
               run: composer phpstan
