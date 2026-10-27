@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.2] - 2026-10-27
+### Added
+- oEmbed responses of type `photo` without `html` now produce an `<img>` embed code from their `url`, `width` and `height` [#584]
+
 ## [4.5.1] - 2026-10-26
 ### Security
 - JSON-LD remote contexts are never fetched. A page-supplied `@context` is not requested, so it cannot bypass the URL policy or follow redirects. schema.org contexts are resolved from a bundled vocabulary; any other remote context is skipped [#573]
@@ -319,6 +323,7 @@ Full library refactoring.
 [#571]: https://github.com/oscarotero/Embed/issues/571
 [#572]: https://github.com/oscarotero/Embed/issues/572
 [#573]: https://github.com/oscarotero/Embed/issues/573
+[#584]: https://github.com/php-embed/Embed/issues/584
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 

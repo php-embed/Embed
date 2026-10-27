@@ -38,7 +38,7 @@ class Code extends Detector
         $html = $oembed->html('html');
 
         if ($html === null) {
-            return null;
+            return $this->detectFromOEmbedPhoto();
         }
 
         return new EmbedCode(
@@ -46,6 +46,33 @@ class Code extends Detector
             $oembed->int('width'),
             $oembed->int('height')
         );
+    }
+
+    private function detectFromOEmbedPhoto(): ?EmbedCode
+    {
+        $oembed = $this->extractor->getOEmbed();
+
+        if ($oembed->str('type') !== 'photo') {
+            return null;
+        }
+
+        $url = $oembed->url('url');
+
+        if ($url === null) {
+            return null;
+        }
+
+        $width = $oembed->int('width');
+        $height = $oembed->int('height');
+
+        $code = html('img', [
+            'src' => $url,
+            'alt' => $oembed->str('title'),
+            'width' => $width,
+            'height' => $height,
+        ]);
+
+        return new EmbedCode($code, $width, $height);
     }
 
     private function detectFromOpenGraph(): ?EmbedCode

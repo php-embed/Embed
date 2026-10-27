@@ -168,6 +168,8 @@ $oembed->int('width'); //Return the value as integer
 $oembed->url('url'); //Return the value as full url (converts relative urls to absolutes)
 ```
 
+When an oEmbed response has type `photo` and no `html`, `$info->code` is built as an `<img>` tag from its `url` (with `width` and `height` when available), so photo providers like GIPHY or Flickr also return embed code.
+
 Additional oEmbed parameters (like instagrams `hidecaption`) can also be provided:
 ```php
 $embed = new Embed();

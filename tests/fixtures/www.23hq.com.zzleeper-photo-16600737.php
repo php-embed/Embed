@@ -5,7 +5,12 @@ return [
     'authorName' => 'Zzleeper',
     'authorUrl' => 'https://www.23hq.com/Zzleeper/',
     'cms' => null,
-    'code' => null,
+    'code' => [
+        'html' => '<img src="https://www.23hq.com/16171062/16600737_ac392e8a4d667e4726fbafc8a21728d5_large.jpg" alt="På god väns inrådan kommer det även bultförband vid pilarna. Låter bra tycker jag. (Better safe than sorry)" width="756" height="567" />',
+        'width' => 756,
+        'height' => 567,
+        'ratio' => 75.0
+    ],
     'description' => 'På god väns inrådan kommer det även bultförband vid pilarna. Låter bra tycker jag. (Better safe than sorry)',
     'favicon' => 'https://www.23hq.com/favicon.ico',
     'feeds' => [],
