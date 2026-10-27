@@ -41,11 +41,64 @@ class Code extends Detector
             return $this->detectFromOEmbedPhoto();
         }
 
+        if ($this->extractor->getSetting('mastodon:iframe') === true) {
+            $iframe = $this->detectMastodonIframe($html, $oembed->int('width'));
+
+            if ($iframe !== null) {
+                return $iframe;
+            }
+        }
+
         return new EmbedCode(
             $html,
             $oembed->int('width'),
             $oembed->int('height')
         );
+    }
+
+    /**
+     * Mastodon's oEmbed html is a blockquote that needs embed.js to become
+     * an iframe. With the "mastodon:iframe" setting, build the iframe directly
+     * from its data-embed-url, only when it points to the same host.
+     */
+    private function detectMastodonIframe(string $html, ?int $width): ?EmbedCode
+    {
+        if (preg_match('/<blockquote\b[^>]*\bclass="[^"]*\bmastodon-embed\b[^"]*"[^>]*>/i', $html, $tag) !== 1) {
+            return null;
+        }
+
+        if (preg_match('/\bdata-embed-url="([^"]+)"/i', $tag[0], $match) !== 1) {
+            return null;
+        }
+
+        $src = html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5);
+        $parts = parse_url($src);
+
+        if (
+            !is_array($parts)
+            || ($parts['scheme'] ?? '') !== 'https'
+            || !isset($parts['host'])
+            || strtolower($parts['host']) !== strtolower($this->extractor->getUri()->getHost())
+            || preg_match('#/embed$#', $parts['path'] ?? '') !== 1
+        ) {
+            return null;
+        }
+
+        if ($width === null || $width <= 0) {
+            $width = 400;
+        }
+
+        $code = html('iframe', [
+            'src' => $src,
+            'class' => 'mastodon-embed',
+            'style' => 'max-width: 100%; border: 0',
+            'width' => $width,
+            'sandbox' => 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
+            'allowfullscreen' => 'allowfullscreen',
+            'loading' => 'lazy',
+        ]);
+
+        return new EmbedCode($code, $width, null);
     }
 
     private function detectFromOEmbedPhoto(): ?EmbedCode

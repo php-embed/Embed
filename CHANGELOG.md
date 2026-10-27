@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.0] - 2026-10-27
+### Added
+- `mastodon:iframe` setting (off by default). Mastodon oEmbed html (`blockquote.mastodon-embed` with `data-embed-url`) becomes a sandboxed `<iframe>` to the post's `/embed` page, so no `embed.js` is needed. Only same-host `https` embed URLs are used
+
 ## [4.5.2] - 2026-10-27
 ### Added
 - oEmbed responses of type `photo` without `html` now produce an `<img>` embed code from their `url`, `width` and `height` [#584]
@@ -327,6 +331,7 @@ Full library refactoring.
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.6.0
 [4.5.2]: https://github.com/php-embed/Embed/compare/v4.5.1...v4.5.2
 [4.5.1]: https://github.com/php-embed/Embed/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/php-embed/Embed/compare/v4.4.19...v4.5.0

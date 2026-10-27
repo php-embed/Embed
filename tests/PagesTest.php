@@ -210,4 +210,14 @@ class PagesTest extends PagesTestCase
     {
         $this->assertEmbed('https://www.bbc.co.uk/news/uk-54222286');
     }
+
+    public function testMastodonFosstodon()
+    {
+        $this->assertEmbed('https://fosstodon.org/@AkaSci/117514634840174369');
+    }
+
+    public function testMastodonHachyderm()
+    {
+        $this->assertEmbed('https://hachyderm.io/@briancmoses/117514657412674435');
+    }
 }
