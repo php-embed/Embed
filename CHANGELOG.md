@@ -327,6 +327,7 @@ Full library refactoring.
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.5.2]: https://github.com/php-embed/Embed/compare/v4.5.1...v4.5.2
 [4.5.1]: https://github.com/php-embed/Embed/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/php-embed/Embed/compare/v4.4.19...v4.5.0
 [4.4.19]: https://github.com/oscarotero/Embed/compare/v4.4.18...v4.4.19
