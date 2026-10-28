@@ -32,6 +32,9 @@ class ExtractorFactory
         'bandcamp.com' => Adapters\Bandcamp\Extractor::class,
         'twitter.com' => Adapters\Twitter\Extractor::class,
         'x.com' => Adapters\Twitter\Extractor::class,
+        'bilibili.com' => Adapters\Bilibili\Extractor::class,
+        'youku.com' => Adapters\Youku\Extractor::class,
+        'music.163.com' => Adapters\NetEase\Extractor::class,
     ];
     /** @var array<string, class-string<Detectors\Detector<Extractor>>> */
     private array $customDetectors = [];
@@ -48,22 +51,7 @@ class ExtractorFactory
 
     public function createExtractor(UriInterface $uri, RequestInterface $request, ResponseInterface $response, Crawler $crawler): Extractor
     {
-        $host = $uri->getHost();
-        $class = $this->default;
-
-        foreach ($this->adapters as $adapterHost => $adapter) {
-            // Check if $host is the same domain as $adapterHost.
-            if ($host === $adapterHost) {
-                $class = $adapter;
-                break;
-            }
-
-            // Check if $host is a subdomain of $adapterHost.
-            if (substr($host, -strlen($adapterHost) - 1) === ".{$adapterHost}") {
-                $class = $adapter;
-                break;
-            }
-        }
+        $class = $this->getClass($uri);
 
         $extractor = new $class($uri, $request, $response, $crawler);
         $extractor->setSettings($this->settings);
@@ -78,6 +66,38 @@ class ExtractorFactory
         }
 
         return $extractor;
+    }
+
+    /**
+     * Lets the adapter of the URL host rewrite the URL before it is requested.
+     */
+    public function normalizeUri(UriInterface $uri): UriInterface
+    {
+        $class = $this->getClass($uri);
+
+        return $class::normalizeUri($uri);
+    }
+
+    /**
+     * @return class-string<Extractor>
+     */
+    private function getClass(UriInterface $uri): string
+    {
+        $host = $uri->getHost();
+
+        foreach ($this->adapters as $adapterHost => $adapter) {
+            // Check if $host is the same domain as $adapterHost.
+            if ($host === $adapterHost) {
+                return $adapter;
+            }
+
+            // Check if $host is a subdomain of $adapterHost.
+            if (substr($host, -strlen($adapterHost) - 1) === ".{$adapterHost}") {
+                return $adapter;
+            }
+        }
+
+        return $this->default;
     }
 
     /**

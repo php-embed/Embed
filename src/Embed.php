@@ -7,6 +7,7 @@ use Embed\Http\BlockedRequestException;
 use Embed\Http\Crawler;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 
 class Embed
 {
@@ -21,7 +22,7 @@ class Embed
 
     public function get(string $url): Extractor
     {
-        $request = $this->crawler->createRequest('GET', $url);
+        $request = $this->crawler->createRequest('GET', $this->normalizeUri($url));
         $response = $this->crawler->sendRequest($request);
 
         return $this->extract($request, $response);
@@ -33,7 +34,7 @@ class Embed
     public function getMulti(string ...$urls): array
     {
         $requests = array_map(
-            fn ($url) => $this->crawler->createRequest('GET', $url),
+            fn ($url) => $this->crawler->createRequest('GET', $this->normalizeUri($url)),
             $urls
         );
 
@@ -67,6 +68,11 @@ class Embed
     public function setSettings(array $settings): void
     {
         $this->extractorFactory->setSettings($settings);
+    }
+
+    private function normalizeUri(string $url): UriInterface
+    {
+        return $this->extractorFactory->normalizeUri($this->crawler->createUri($url));
     }
 
     private function extract(RequestInterface $request, ResponseInterface $response, bool $redirect = true): Extractor

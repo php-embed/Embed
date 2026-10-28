@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.0] - 2026-10-27
+### Added
+- Bilibili adapter: `bilibili.com/video/BV...` and `av...` URLs (also `b23.tv` short links) get a `player.bilibili.com` iframe built from the URL. The title, description and image of Bilibili's error page are ignored [#243]
+- Youku adapter: `v.youku.com/v_show/id_<ID>.html` URLs get a `player.youku.com/embed` iframe built from the URL [#243]
+- NetEase Music adapter: songs, albums and playlists on `music.163.com` get an `outchain/player` iframe, and the author is read from the description. URLs with a `#/` route are requested without it [#243]
+- `Extractor::normalizeUri()`, used by adapters to rewrite a URL before it is requested
+
 ## [4.5.2] - 2026-10-27
 ### Added
 - oEmbed responses of type `photo` without `html` now produce an `<img>` embed code from their `url`, `width` and `height` [#584]
@@ -324,9 +331,11 @@ Full library refactoring.
 [#572]: https://github.com/oscarotero/Embed/issues/572
 [#573]: https://github.com/oscarotero/Embed/issues/573
 [#584]: https://github.com/php-embed/Embed/issues/584
+[#243]: https://github.com/php-embed/Embed/issues/243
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.6.0
 [4.5.2]: https://github.com/php-embed/Embed/compare/v4.5.1...v4.5.2
 [4.5.1]: https://github.com/php-embed/Embed/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/php-embed/Embed/compare/v4.4.19...v4.5.0

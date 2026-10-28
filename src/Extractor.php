@@ -239,6 +239,15 @@ class Extractor
         return $this->response;
     }
 
+    /**
+     * Rewrites a URL before it is requested. Adapters can override it,
+     * for example to move a route stored in the fragment to the path.
+     */
+    public static function normalizeUri(UriInterface $uri): UriInterface
+    {
+        return $uri;
+    }
+
     public function getUri(): UriInterface
     {
         return $this->uri;

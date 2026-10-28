@@ -53,6 +53,12 @@ class PagesTest extends PagesTestCase
             ['http://www.wired.com/?p=2064839'],
             ['https://www.itmedia.co.jp/news/articles/2410/28/news159.html'],
             ['https://4pda.to/2022/12/04/406834/sostoyalsya_reliz_clown_of_duty_parodii_na_call_of_duty/'],
+            // Bilibili and Youku snapshots were captured from a restricted network (a US
+            // data center IP): Bilibili serves its error page and Youku blocks the request.
+            ['https://www.bilibili.com/video/BV1GJ411x7h7'],
+            ['https://v.youku.com/v_show/id_XNTk1MTU4MDQ0OA==.html'],
+            ['https://music.163.com/song?id=186016'],
+            ['https://music.163.com/#/album?id=18905'],
         ];
     }
 

@@ -263,6 +263,8 @@ The `Extractor` class has many `Detectors`. Each detector is responsible to dete
 
 So, an adapter is basically an extractor created specifically for a site. It can contains also custom detectors or apis. If you see the `src/Adapters` folder you can see all adapters.
 
+An adapter can also rewrite the URL before it is requested by overriding the static `normalizeUri()` method of its extractor. For example, the NetEase Music adapter turns `music.163.com/#/song?id=1` into `music.163.com/song?id=1`, because the part after `#` is never sent to the server.
+
 If you create an adapter, you need also register to Embed, so it knows in which website needs to use. To do that, there's the `ExtractorFactory` object, that is responsible for instantiate the right extractor for each site.
 
 ```php
