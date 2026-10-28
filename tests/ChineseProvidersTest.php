@@ -15,14 +15,17 @@ use Psr\Http\Message\ResponseInterface;
  * Bilibili, Youku and NetEase Music adapters [#243].
  *
  * The player iframes are built from the URL alone, so these tests use
- * offline pages. The real pages could only be captured from a restricted
- * network (a US data center IP), where Bilibili serves its error page and
- * Youku blocks the request, so their real metadata is not covered here.
+ * offline pages. Youku and NetEase real pages are covered by PagesTest
+ * snapshots captured from a residential connection in Venezuela. Bilibili
+ * served its error page there too, so its real metadata is not covered.
  */
 class ChineseProvidersTest extends TestCase
 {
     private const BILIBILI_ERROR = '<!DOCTYPE html><html><head><title>出错啦! - bilibili.com</title>'
         .'<meta name="description" content="bilibili是国内知名的视频弹幕网站"></head><body></body></html>';
+
+    private const BILIBILI_MISSING = '<!DOCTYPE html><html><head><title>视频去哪了呢？_哔哩哔哩_bilibili</title>'
+        .'<meta name="description" content="{$0}, 视频播放量 undefined"></head><body></body></html>';
 
     private RecordingClient $client;
 
@@ -57,6 +60,27 @@ class ChineseProvidersTest extends TestCase
         $this->assertNull($info->title);
         $this->assertNull($info->description);
         $this->assertNull($info->image);
+    }
+
+    public function testBilibiliMissingVideoPageHasNoMetadata(): void
+    {
+        $info = $this->embed(['/video/BV1GJ411x7h7' => self::BILIBILI_MISSING])
+            ->get('https://www.bilibili.com/video/BV1GJ411x7h7');
+
+        $this->assertNull($info->title);
+        $this->assertNull($info->description);
+        $this->assertNull($info->image);
+        $this->assertNotNull($info->code);
+    }
+
+    public function testBilibiliTemplateDescriptionIsDiscarded(): void
+    {
+        $info = $this->embed([
+            '/video/BV1GJ411x7h7' => $this->page('<meta name="description" content="{$0}, 视频播放量 undefined">'),
+        ])->get('https://www.bilibili.com/video/BV1GJ411x7h7');
+
+        $this->assertSame('Page title', $info->title);
+        $this->assertNull($info->description);
     }
 
     public function testBilibiliVideoPageKeepsMetadata(): void
@@ -151,6 +175,34 @@ class ChineseProvidersTest extends TestCase
         ])->get('https://music.163.com/song?id=186016');
 
         $this->assertSame('周杰伦', $info->authorName);
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public function netEaseMvUrlProvider(): array
+    {
+        return [
+            ['https://music.163.com/mv?id=5436712'],
+            ['https://music.163.com/#/mv?id=5436712'],
+        ];
+    }
+
+    /**
+     * NetEase has no official embeddable MV player, so MV pages only get metadata.
+     *
+     * @dataProvider netEaseMvUrlProvider
+     */
+    public function testNetEaseMvGetsMetadataOnly(string $url): void
+    {
+        $info = $this->embed([
+            '/mv' => $this->page('<meta property="og:title" content="广岛之恋">'),
+        ])->get($url);
+        $urls = array_map(static fn (RequestInterface $request): string => (string) $request->getUri(), $this->client->requests);
+
+        $this->assertSame(['https://music.163.com/mv?id=5436712'], $urls);
+        $this->assertSame('广岛之恋', $info->title);
+        $this->assertNull($info->code);
     }
 
     public function testNetEaseOtherPageHasNoPlayer(): void

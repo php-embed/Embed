@@ -6,9 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [4.6.0] - 2026-10-27
 ### Added
-- Bilibili adapter: `bilibili.com/video/BV...` and `av...` URLs (also `b23.tv` short links) get a `player.bilibili.com` iframe built from the URL. The title, description and image of Bilibili's error page are ignored [#243]
+- Bilibili adapter: `bilibili.com/video/BV...` and `av...` URLs (also `b23.tv` short links) get a `player.bilibili.com` iframe built from the URL. The title, description and image of Bilibili's error pages ("出错啦!" and "视频去哪了呢？") are ignored, and so is a description template that was never filled [#243]
 - Youku adapter: `v.youku.com/v_show/id_<ID>.html` URLs get a `player.youku.com/embed` iframe built from the URL [#243]
-- NetEase Music adapter: songs, albums and playlists on `music.163.com` get an `outchain/player` iframe, and the author is read from the description. URLs with a `#/` route are requested without it [#243]
+- NetEase Music adapter: songs, albums and playlists on `music.163.com` get an `outchain/player` iframe, and the author is read from the description. URLs with a `#/` route are requested without it. MV pages (`/mv?id=` and `/#/mv?id=`) get metadata only, because NetEase has no official embeddable MV player [#243]
 - `Extractor::normalizeUri()`, used by adapters to rewrite a URL before it is requested
 
 ## [4.5.2] - 2026-10-27

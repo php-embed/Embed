@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Embed\Adapters\Bilibili\Detectors;
 
+use Embed\Adapters\Bilibili\Extractor;
 use Embed\Detectors\Description as Detector;
 
 /**
@@ -16,6 +17,12 @@ class Description extends Detector
             return null;
         }
 
-        return parent::detect();
+        $description = parent::detect();
+
+        if ($description !== null && Extractor::isTemplate($description)) {
+            return null;
+        }
+
+        return $description;
     }
 }

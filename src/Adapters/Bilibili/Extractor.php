@@ -11,10 +11,10 @@ use Embed\Extractor as Base;
 class Extractor extends Base
 {
     /**
-     * Title of the page Bilibili serves when the video is not available,
+     * Titles of the pages Bilibili serves when the video is not available,
      * for example when the request comes from a restricted region.
      */
-    private const ERROR_TITLE = '出错啦';
+    private const ERROR_TITLES = ['出错啦', '视频去哪了呢'];
 
     public function createCustomDetectors(): array
     {
@@ -30,7 +30,26 @@ class Extractor extends Base
     {
         $title = $this->getDocument()->select('.//head/title')->str();
 
-        return $title !== null && strpos($title, self::ERROR_TITLE) !== false;
+        if ($title === null) {
+            return false;
+        }
+
+        foreach (self::ERROR_TITLES as $errorTitle) {
+            if (strpos($title, $errorTitle) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Error pages may also carry a description template that was never
+     * filled, with placeholders like {$0} or undefined.
+     */
+    public static function isTemplate(string $text): bool
+    {
+        return preg_match('/\{\$\d+\}|\bundefined\b/', $text) === 1;
     }
 
     /**

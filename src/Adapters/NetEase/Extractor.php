@@ -29,12 +29,14 @@ class Extractor extends Base
     /**
      * NetEase Music URLs like /#/song?id=1 keep the route in the fragment,
      * which is never sent to the server. Move it to the path and query.
+     * MV pages (/mv?id=1) are normalized too, but NetEase has no official
+     * embeddable MV player, so they only get metadata.
      */
     public static function normalizeUri(UriInterface $uri): UriInterface
     {
         $fragment = $uri->getFragment();
 
-        if (preg_match('#^/(?:m/)?(song|album|playlist)\?(.*)$#', $fragment, $matches) !== 1) {
+        if (preg_match('#^/(?:m/)?(song|album|playlist|mv)\?(.*)$#', $fragment, $matches) !== 1) {
             return $uri;
         }
 
