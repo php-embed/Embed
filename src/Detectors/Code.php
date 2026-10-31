@@ -226,7 +226,8 @@ class Code extends Detector
             return null;
         }
 
-        $url = $this->extractor->getRequest()->getUri();
+        // The final URL, so a file behind a redirect is embedded from where it is.
+        $url = $this->extractor->getUri();
 
         if (strpos($contentType, 'video/') === 0 || $contentType === 'application/mp4') {
             $code = html('video', [

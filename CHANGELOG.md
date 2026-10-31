@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - NetEase Music adapter: songs, albums and playlists on `music.163.com` get an `outchain/player` iframe, and the author is read from the description. URLs with a `#/` route are requested without it. MV pages (`/mv?id=` and `/#/mv?id=`) get metadata only, because NetEase has no official embeddable MV player [#243]
 - `Extractor::normalizeUri()`, used by adapters to rewrite a URL before it is requested
 
+## [4.5.5] - 2026-10-30
+### Fixed
+- X/Twitter status URLs get their oEmbed from `publish.twitter.com` with the status URL that was requested, even when logged-out visitors are redirected to `x.com/home`, the `x.com/x/migrate` form or a login wall. `mobile.twitter.com` and `/statuses/` URLs are accepted, query strings like `?s=20` are dropped, and the title is no longer "x.com" [#520] [#536]
+- A `<` that cannot open a tag (like in `Brytere =<250A`) no longer makes the rest of a title or description disappear [#372]
+- Image and other URLs with inner spaces (like `1024-576  logo.jpg`) keep them, encoded as `%20`, instead of being collapsed [#485]
+- Images and other media detected by content type use the final URL after redirects as their `src` [#524]
+- On PHP 8, curl handles (and their file descriptors) are released as soon as a request finishes, instead of waiting for the garbage collector, so long running workers no longer hit "Too many open files" [#283]
+
 ## [4.5.4] - 2026-10-30
 ### Security
 - TLS verification is on by default. `CurlClient` now sends `CURLOPT_SSL_VERIFYPEER` true and `CURLOPT_SSL_VERIFYHOST` 2 unless told otherwise, so self-signed, expired and wrong-host certificates are rejected (curl error 60). Before, both checks were off when the settings were missing [#575]
@@ -356,10 +364,17 @@ Full library refactoring.
 [#584]: https://github.com/php-embed/Embed/issues/584
 [#243]: https://github.com/php-embed/Embed/issues/243
 [#575]: https://github.com/php-embed/Embed/issues/575
+[#283]: https://github.com/php-embed/Embed/issues/283
+[#372]: https://github.com/php-embed/Embed/issues/372
+[#485]: https://github.com/php-embed/Embed/issues/485
+[#520]: https://github.com/php-embed/Embed/issues/520
+[#524]: https://github.com/php-embed/Embed/issues/524
+[#536]: https://github.com/php-embed/Embed/issues/536
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
 [4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.6.0
+[4.5.5]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.5.5
 [4.5.4]: https://github.com/php-embed/Embed/compare/v4.5.3...v4.5.4
 [4.5.3]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.5.3
 [4.5.2]: https://github.com/php-embed/Embed/compare/v4.5.1...v4.5.2

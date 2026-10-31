@@ -11,7 +11,11 @@ function clean(string $value, bool $allowHTML = false): ?string
 
     if (!$allowHTML) {
         $value = html_entity_decode($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401);
+        // A "<" before a digit, space or "=" (like in "=<250A") is plain text, but
+        // strip_tags() would drop everything after it.
+        $value = preg_replace('/<(?=[\d\s=]|$)/', "\u{E000}", $value) ?? $value;
         $value = strip_tags($value);
+        $value = str_replace("\u{E000}", '<', $value);
     }
 
     $replaced = preg_replace('/\s+/u', ' ', $value);
