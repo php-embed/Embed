@@ -187,6 +187,26 @@ class PagesTest extends PagesTestCase
         $this->assertEmbed('https://www.twitch.tv/twit');
     }
 
+    public function testTwitchClip()
+    {
+        $this->assertEmbed('https://clips.twitch.tv/IncredulousAbstemiousFennelImGlitch');
+    }
+
+    public function testKickChannel()
+    {
+        $this->assertEmbed('https://kick.com/xqc');
+    }
+
+    public function testKickVideo()
+    {
+        $this->assertEmbed('https://kick.com/xqc/videos/4aeefefc-cd67-413e-8107-14327b21f5a3');
+    }
+
+    public function testKickClip()
+    {
+        $this->assertEmbed('https://kick.com/xqc/clips/clip_01M5YVZS3AF6NPDY1RMFXKRSWK');
+    }
+
     public function testTwitter()
     {
         $this->assertEmbed('https://twitter.com/pepephone/status/436461658601713664');

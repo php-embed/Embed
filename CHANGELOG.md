@@ -4,9 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.6.0] - 2026-10-27
+## [4.6.0] - 2026-10-30
 ### Added
 - `mastodon:iframe` setting (off by default). Mastodon oEmbed html (`blockquote.mastodon-embed` with `data-embed-url`) becomes a sandboxed `<iframe>` to the post's `/embed` page, so no `embed.js` is needed. Only same-host `https` embed URLs are used
+
+## [4.5.4] - 2026-10-30
+### Security
+- TLS verification is on by default. `CurlClient` now sends `CURLOPT_SSL_VERIFYPEER` true and `CURLOPT_SSL_VERIFYHOST` 2 unless told otherwise, so self-signed, expired and wrong-host certificates are rejected (curl error 60). Before, both checks were off when the settings were missing [#575]
+- A `null` `ssl_verify_peer` or `ssl_verify_host` now means the default (verification on). Explicit `0`, `false`, `'0'` and `''` still disable it
+
+To disable verification, which is not recommended, pass the existing settings:
+
+```php
+$client = new Embed\Http\CurlClient();
+$client->setSettings(['ssl_verify_peer' => false, 'ssl_verify_host' => 0]);
+$embed = new Embed\Embed(new Embed\Http\Crawler($client));
+```
+
+## [4.5.3] - 2026-10-30
+### Added
+- Kick adapter. Channel pages embed `https://player.kick.com/<slug>` (16:9). Video pages read the title, thumbnail and author name from Kick's public API. Clips have no embed code because Kick does not document a clip player
+
+### Fixed
+- An Open Graph video served as HLS (`.m3u8`, `application/x-mpegURL` or `application/vnd.apple.mpegurl`, also read from `og:video:type`) no longer produces an `<iframe>` pointing to the playlist
+- Twitch video iframes use the documented `video=v<ID>` parameter instead of `id`
+- Twitch clip URLs (`clips.twitch.tv/<slug>` and `twitch.tv/<channel>/clip/<slug>`) produce a `clips.twitch.tv/embed` iframe when `twitch:parent` is set
 
 ## [4.5.2] - 2026-10-27
 ### Added
@@ -328,10 +350,13 @@ Full library refactoring.
 [#572]: https://github.com/oscarotero/Embed/issues/572
 [#573]: https://github.com/oscarotero/Embed/issues/573
 [#584]: https://github.com/php-embed/Embed/issues/584
+[#575]: https://github.com/php-embed/Embed/issues/575
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
-[4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.6.0
+[4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.6.0
+[4.5.4]: https://github.com/php-embed/Embed/compare/v4.5.3...v4.5.4
+[4.5.3]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.5.3
 [4.5.2]: https://github.com/php-embed/Embed/compare/v4.5.1...v4.5.2
 [4.5.1]: https://github.com/php-embed/Embed/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/php-embed/Embed/compare/v4.4.19...v4.5.0

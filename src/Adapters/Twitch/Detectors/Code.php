@@ -26,8 +26,26 @@ class Code extends Detector
         $id = self::getVideoId($path);
         if ($id !== null) {
             $code = $parent !== null
-                ? self::generateIframeCode(['id' => $id, 'parent' => $parent])
+                ? self::generateIframeCode(['video' => "v{$id}", 'parent' => $parent])
                 : self::generateJsCode('video', $id);
+            return new EmbedCode($code, 620, 378);
+        }
+
+        $id = self::getClipId($this->extractor->getUri()->getHost(), $path);
+        if ($id !== null) {
+            if ($parent === null) {
+                // Clips only have an iframe player, and it requires a parent.
+                return null;
+            }
+            $query = http_build_query(['clip' => $id, 'parent' => $parent, 'autoplay' => 'false']);
+            $code = html('iframe', [
+                'src' => "https://clips.twitch.tv/embed?{$query}",
+                'frameborder' => 0,
+                'allowfullscreen' => 'true',
+                'scrolling' => 'no',
+                'height' => 378,
+                'width' => 620,
+            ]);
             return new EmbedCode($code, 620, 378);
         }
 
@@ -45,6 +63,19 @@ class Code extends Detector
     private static function getVideoId(string $path): ?string
     {
         if (preg_match('#^/videos/(\d+)$#', $path, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    private static function getClipId(string $host, string $path): ?string
+    {
+        if (preg_match('#^/\w+/clip/([\w-]+)$#', $path, $matches) === 1) {
+            return $matches[1];
+        }
+
+        if ($host === 'clips.twitch.tv' && preg_match('#^/([\w-]+)$#', $path, $matches) === 1 && $matches[1] !== 'embed') {
             return $matches[1];
         }
 
