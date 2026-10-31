@@ -348,9 +348,12 @@ $embed->setSettings([
     'facebook:token' => '1234|5678',  //Required to embed content from Facebook
     'instagram:token' => '1234|5678', //Required to embed content from Instagram
     'twitter:token' => 'asdf',        //Improve the data from twitter
+    'mastodon:iframe' => true,        //Embed Mastodon posts as an iframe instead of a blockquote + embed.js (default: false)
 ]);
 $info = $embed->get($url);
 ```
+
+With `mastodon:iframe`, the oEmbed html of any Mastodon server (`<blockquote class="mastodon-embed" data-embed-url="...">` plus `embed.js`) is replaced with an `<iframe>` pointing to its `data-embed-url`, 400px wide, sandboxed and with `allowfullscreen`. It only applies when the embed URL is `https`, ends in `/embed` and is on the same host as the post. Mastodon does not report a height, so `$info->code->height` is `null`; without `embed.js` the iframe does not resize to its content, so set a height in your CSS.
 
 Note: The built-in detectors does not require settings. This feature is only for convenience if you create a specific detector that requires settings.
 

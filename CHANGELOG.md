@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.0] - 2026-10-30
+### Added
+- `mastodon:iframe` setting (off by default). Mastodon oEmbed html (`blockquote.mastodon-embed` with `data-embed-url`) becomes a sandboxed `<iframe>` to the post's `/embed` page, so no `embed.js` is needed. Only same-host `https` embed URLs are used
+
 ## [4.5.4] - 2026-10-30
 ### Security
 - TLS verification is on by default. `CurlClient` now sends `CURLOPT_SSL_VERIFYPEER` true and `CURLOPT_SSL_VERIFYHOST` 2 unless told otherwise, so self-signed, expired and wrong-host certificates are rejected (curl error 60). Before, both checks were off when the settings were missing [#575]
@@ -350,6 +354,7 @@ Full library refactoring.
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.6.0
 [4.5.4]: https://github.com/php-embed/Embed/compare/v4.5.3...v4.5.4
 [4.5.3]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.5.3
 [4.5.2]: https://github.com/php-embed/Embed/compare/v4.5.1...v4.5.2
