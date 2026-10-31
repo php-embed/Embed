@@ -313,6 +313,95 @@ $info = $embed->get('http://example.com');
 $robots = $info->robots;
 ```
 
+### HTTP layer
+
+Every request Embed makes goes through three pieces:
+
+- `Embed\Http\Crawler` is what `Embed` uses. It creates the requests (adding default headers), validates URLs with the `UrlPolicy` and hands them to a PSR-18 client. Get it with `$embed->getCrawler()`.
+- `Embed\Http\CurlClient` is the default PSR-18 client. It keeps the settings (`setSettings()`) and the `UrlPolicy`, and `sendRequests()` runs several requests in parallel (used by `getMulti()`).
+- `Embed\Http\CurlDispatcher` does the actual curl work: it pins DNS, follows redirects, applies timeouts and builds the PSR-7 responses. It is `final` and internal, so you do not create or extend it.
+
+#### Upgrading from v3 (`CurlDispatcher` with `CURLOPT_*` options)
+
+In v3 you passed a `CurlDispatcher` with raw `CURLOPT_*` options to `Embed::create()`. That API is gone in v4: the `CurlDispatcher` constructor is private and the class is `final`. Raw `CURLOPT_*` options are not accepted, because some of them (`CURLOPT_FOLLOWLOCATION`, `CURLOPT_RESOLVE`, `CURLOPT_PROTOCOLS`) are what keeps the SSRF protection working. Use the named settings of `CurlClient` instead:
+
+| v3 option | v4 `CurlClient` setting |
+| --- | --- |
+| `CURLOPT_MAXREDIRS` | `max_redirs` (default 10) |
+| `CURLOPT_CONNECTTIMEOUT` | `connect_timeout` (default 10) |
+| `CURLOPT_TIMEOUT` | `timeout` (default 10, total time including redirects) |
+| `CURLOPT_FOLLOWLOCATION` | `follow_location` (default true) |
+| `CURLOPT_SSL_VERIFYHOST` | `ssl_verify_host` (default 2) |
+| `CURLOPT_SSL_VERIFYPEER` | `ssl_verify_peer` (default true) |
+| `CURLOPT_USERAGENT` | `user_agent` |
+| `CURLOPT_COOKIEJAR` / `CURLOPT_COOKIEFILE` | `cookies_path` (default `embed-cookies.txt` in `sys_get_temp_dir()`) |
+| `CURLOPT_IPRESOLVE` | always `CURL_IPRESOLVE_V4` |
+| `CURLOPT_ENCODING` | always `''` (every encoding curl supports) |
+
+There is also `ignored_errors`: a list of curl error codes (for example `[18]`) that do not throw. See [Settings](#settings) for the full example.
+
+```php
+use Embed\Embed;
+use Embed\Http\Crawler;
+use Embed\Http\CurlClient;
+
+$client = new CurlClient();
+$client->setSettings([
+    'max_redirs' => 20,
+    'connect_timeout' => 5,
+    'timeout' => 15,
+    'user_agent' => 'MyBot/1.0',
+    'cookies_path' => __DIR__.'/cookies.txt',
+]);
+
+$embed = new Embed(new Crawler($client));
+$info = $embed->get('https://example.com');
+```
+
+Calling `setSettings()` again merges the new values over the previous ones.
+
+Extra headers go on the crawler and are sent with every request. They override the defaults (a Firefox `User-Agent` and `Cache-Control: max-age=0`). The `user_agent` setting, when present, wins over the `User-Agent` header:
+
+```php
+$embed->getCrawler()->addDefaultHeaders([
+    'Accept-Language' => 'es-ES,es;q=0.9',
+]);
+```
+
+#### Custom client instead of a custom dispatcher
+
+To change how requests are sent (logging, caching, retries, a different HTTP library), pass any PSR-18 client to the `Crawler`. To keep the built-in curl client and its SSRF protection, wrap it:
+
+```php
+use Embed\Embed;
+use Embed\Http\Crawler;
+use Embed\Http\CurlClient;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+
+class LoggingClient implements ClientInterface
+{
+    private CurlClient $client;
+
+    public function __construct(CurlClient $client)
+    {
+        $this->client = $client;
+    }
+
+    public function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        error_log('Embed request: '.$request->getUri());
+
+        return $this->client->sendRequest($request);
+    }
+}
+
+$embed = new Embed(new Crawler(new LoggingClient(new CurlClient())));
+```
+
+With a client that is not exactly `CurlClient`, `getMulti()` sends the requests one by one instead of in parallel, and `Crawler::setUrlPolicy()` does not reach the inner client (see [Security / SSRF protection](#security--ssrf-protection) and [Custom PSR-18 clients](#custom-psr-18-clients)).
+
 ### Settings
 
 If you need to pass settings to the CurlClient to perform http queries:
