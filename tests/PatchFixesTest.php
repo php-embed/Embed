@@ -12,7 +12,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Regressions fixed in 4.5.5, with fake responses and no network.
+ * Regressions fixed in 4.6.1, with fake responses and no network.
  */
 class PatchFixesTest extends TestCase
 {
