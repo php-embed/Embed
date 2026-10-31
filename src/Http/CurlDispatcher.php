@@ -772,14 +772,15 @@ final class CurlDispatcher
     }
 
     /**
-     * libcurl accepts only 0 and 2. PHP turns 1 into 2 and emits a notice,
+     * Hostname verification is on (2) unless disabled explicitly with 0,
+     * false, "0" or "". libcurl accepts only 0 and 2. PHP turns 1 into 2 and emits a notice,
      * which is what a truthy setting used to do when it was passed through.
      *
      * @return 0|2
      */
     private function sslVerifyHost(): int
     {
-        $value = $this->settings['ssl_verify_host'] ?? 0;
+        $value = $this->settings['ssl_verify_host'] ?? 2;
         if ($value === false || $value === 0 || $value === 0.0 || $value === '' || $value === '0') {
             return 0;
         }
@@ -823,12 +824,14 @@ final class CurlDispatcher
     }
 
     /**
-     * Same rule as a value passed straight to curl: only a falsy setting
+     * Verification is on unless disabled explicitly. Same rule as a value
+     * passed straight to curl: only a falsy setting (0, false, "0", "")
      * disables certificate verification. 2, "true" and "yes" stay enabled.
+     * A missing or null setting keeps it enabled.
      */
     private function sslVerifyPeer(): bool
     {
-        $value = $this->settings['ssl_verify_peer'] ?? false;
+        $value = $this->settings['ssl_verify_peer'] ?? true;
         if ($value === false || $value === 0 || $value === 0.0 || $value === '' || $value === '0' || $value === []) {
             return false;
         }

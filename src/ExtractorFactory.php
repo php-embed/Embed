@@ -29,6 +29,7 @@ class ExtractorFactory
         'imageshack.com' => Adapters\ImageShack\Extractor::class,
         'youtube.com' => Adapters\Youtube\Extractor::class,
         'twitch.tv' => Adapters\Twitch\Extractor::class,
+        'kick.com' => Adapters\Kick\Extractor::class,
         'bandcamp.com' => Adapters\Bandcamp\Extractor::class,
         'twitter.com' => Adapters\Twitter\Extractor::class,
         'x.com' => Adapters\Twitter\Extractor::class,

@@ -193,6 +193,26 @@ class PagesTest extends PagesTestCase
         $this->assertEmbed('https://www.twitch.tv/twit');
     }
 
+    public function testTwitchClip()
+    {
+        $this->assertEmbed('https://clips.twitch.tv/IncredulousAbstemiousFennelImGlitch');
+    }
+
+    public function testKickChannel()
+    {
+        $this->assertEmbed('https://kick.com/xqc');
+    }
+
+    public function testKickVideo()
+    {
+        $this->assertEmbed('https://kick.com/xqc/videos/4aeefefc-cd67-413e-8107-14327b21f5a3');
+    }
+
+    public function testKickClip()
+    {
+        $this->assertEmbed('https://kick.com/xqc/clips/clip_01M5YVZS3AF6NPDY1RMFXKRSWK');
+    }
+
     public function testTwitter()
     {
         $this->assertEmbed('https://twitter.com/pepephone/status/436461658601713664');
@@ -215,5 +235,15 @@ class PagesTest extends PagesTestCase
     public function testBBCNews()
     {
         $this->assertEmbed('https://www.bbc.co.uk/news/uk-54222286');
+    }
+
+    public function testMastodonFosstodon()
+    {
+        $this->assertEmbed('https://fosstodon.org/@AkaSci/117514634840174369');
+    }
+
+    public function testMastodonHachyderm()
+    {
+        $this->assertEmbed('https://hachyderm.io/@briancmoses/117514657412674435');
     }
 }
