@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.1] - 2026-10-30
+### Fixed
+- X/Twitter status URLs get their oEmbed from `publish.twitter.com` with the status URL that was requested, even when logged-out visitors are redirected to `x.com/home`, the `x.com/x/migrate` form or a login wall. `mobile.twitter.com` and `/statuses/` URLs are accepted, query strings like `?s=20` are dropped, and the title is no longer "x.com" [#520] [#536]
+- A `<` that cannot open a tag (like in `Brytere =<250A`) no longer makes the rest of a title or description disappear [#372]
+- Image and other URLs with inner spaces (like `1024-576  logo.jpg`) keep them, encoded as `%20`, instead of being collapsed [#485]
+- Images and other media detected by content type use the final URL after redirects as their `src` [#524]
+- On PHP 8, curl handles (and their file descriptors) are released as soon as a request finishes, instead of waiting for the garbage collector, so long running workers no longer hit "Too many open files" [#283]
+
 ## [4.6.0] - 2026-10-30
 ### Added
 - `mastodon:iframe` setting (off by default). Mastodon oEmbed html (`blockquote.mastodon-embed` with `data-embed-url`) becomes a sandboxed `<iframe>` to the post's `/embed` page, so no `embed.js` is needed. Only same-host `https` embed URLs are used
@@ -356,9 +364,16 @@ Full library refactoring.
 [#584]: https://github.com/php-embed/Embed/issues/584
 [#243]: https://github.com/php-embed/Embed/issues/243
 [#575]: https://github.com/php-embed/Embed/issues/575
+[#283]: https://github.com/php-embed/Embed/issues/283
+[#372]: https://github.com/php-embed/Embed/issues/372
+[#485]: https://github.com/php-embed/Embed/issues/485
+[#520]: https://github.com/php-embed/Embed/issues/520
+[#524]: https://github.com/php-embed/Embed/issues/524
+[#536]: https://github.com/php-embed/Embed/issues/536
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.6.1]: https://github.com/php-embed/Embed/compare/v4.6.0...v4.6.1
 [4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.6.0
 [4.5.4]: https://github.com/php-embed/Embed/compare/v4.5.3...v4.5.4
 [4.5.3]: https://github.com/php-embed/Embed/compare/v4.5.2...v4.5.3

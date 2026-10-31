@@ -20,6 +20,17 @@ class Title extends Detector
             return "Tweet by $name";
         }
 
+        // After a redirect to a login or migration page the HTML title is
+        // not about the tweet, so use the oEmbed author instead.
+        $status = $this->extractor->getStatusUri();
+        $final = $this->extractor->getUri();
+        if ($status !== null && strpos($final->getPath(), $status->getPath()) !== 0) {
+            $author = $this->extractor->getOEmbed()->str('author_name');
+            if ($author !== null) {
+                return "Tweet by $author";
+            }
+        }
+
         return parent::detect();
     }
 }

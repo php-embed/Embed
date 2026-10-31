@@ -6,7 +6,7 @@ return [
     'authorUrl' => null,
     'cms' => null,
     'code' => [
-        'html' => '<img src="http://i.imgur.com/X6rkCc5.jpg" />',
+        'html' => '<img src="https://i.imgur.com/X6rkCc5.jpg" />',
         'width' => null,
         'height' => null,
         'ratio' => null
