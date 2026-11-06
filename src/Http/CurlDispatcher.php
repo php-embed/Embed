@@ -704,8 +704,22 @@ final class CurlDispatcher
 
     private function closeCurl(): void
     {
-        if ($this->closed || PHP_VERSION_ID >= 80000) {
+        if ($this->closed) {
+            return;
+        }
+
+        if (PHP_VERSION_ID >= 80000) {
+            // The header and body callbacks point back to $this, so the handle
+            // and this object keep each other alive until the garbage
+            // collector runs, and every request leaves its sockets open.
+            // Replacing them with static callbacks breaks that cycle, so the
+            // handle is freed as soon as the response is built.
             $this->closed = true;
+            $this->setopt(CURLOPT_HEADERFUNCTION, static fn ($curl, string $data): int => strlen($data));
+            $this->setopt(CURLOPT_WRITEFUNCTION, static fn ($curl, string $data): int => strlen($data));
+            if (PHP_VERSION_ID >= 80400 && defined('CURLOPT_PREREQFUNCTION')) {
+                $this->setopt(CURLOPT_PREREQFUNCTION, static fn (): int => CURL_PREREQFUNC_OK);
+            }
 
             return;
         }

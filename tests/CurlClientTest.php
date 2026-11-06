@@ -439,6 +439,31 @@ class CurlClientTest extends TestCase
         $this->assertSame(['/landed'], self::$server->paths());
     }
 
+    /**
+     * @see https://github.com/php-embed/Embed/issues/283
+     */
+    public function testRequestsDoNotLeaveFileDescriptorsOpen(): void
+    {
+        if (!is_dir('/dev/fd')) {
+            $this->markTestSkipped('/dev/fd is not available');
+        }
+
+        $client = $this->client();
+        $factory = new Psr17Factory();
+        $client->sendRequest($this->request($this->url('/landed')));
+        $before = count((array) glob('/dev/fd/*'));
+
+        for ($i = 0; $i < 10; ++$i) {
+            $client->sendRequest($this->request($this->url('/chain?i=0&n=1')));
+            $client->sendRequests(
+                $factory->createRequest('GET', $this->url('/landed')),
+                $factory->createRequest('GET', $this->url('/landed'))
+            );
+        }
+
+        $this->assertLessThanOrEqual($before + 2, count((array) glob('/dev/fd/*')));
+    }
+
     public function testParallelRequestsFollowRedirects(): void
     {
         $factory = new Psr17Factory();

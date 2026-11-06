@@ -24,6 +24,26 @@ class Extractor extends Base
     ) {
         parent::__construct($uri, $request, $response, $crawler);
         $this->api = new Api($this);
+        $this->oembed = new OEmbed($this);
+    }
+
+    /**
+     * The status URL of the tweet, taken from the requested URL first because
+     * the final URL can be a login or migration page after the redirects.
+     */
+    public function getStatusUri(): ?UriInterface
+    {
+        foreach ([$this->getRequest()->getUri(), $this->getUri()] as $uri) {
+            $host = strtolower($uri->getHost());
+            if (preg_match('/^(?:(?:www|mobile)\\.)?(twitter|x)\\.com$/', $host, $site) !== 1) {
+                continue;
+            }
+            if (preg_match('#^/([^/]+)/status(?:es)?/(\\d+)#', $uri->getPath(), $match) === 1) {
+                return $this->getCrawler()->createUri("https://{$site[1]}.com/{$match[1]}/status/{$match[2]}");
+            }
+        }
+
+        return null;
     }
 
     public function getApi(): Api
