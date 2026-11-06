@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.2] - 2026-11-06
+### Added
+- README section about the HTTP layer: how `Crawler`, `CurlClient` and `CurlDispatcher` fit together, the v4 setting for each v3 `CURLOPT_*` option, extra headers, and how to wrap the client instead of extending the dispatcher [#445]
+
 ## [4.6.1] - 2026-10-30
 ### Fixed
 - X/Twitter status URLs get their oEmbed from `publish.twitter.com` with the status URL that was requested, even when logged-out visitors are redirected to `x.com/home`, the `x.com/x/migrate` form or a login wall. `mobile.twitter.com` and `/statuses/` URLs are accepted, query strings like `?s=20` are dropped, and the title is no longer "x.com" [#520] [#536]
@@ -373,6 +377,7 @@ Full library refactoring.
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.6.2]: https://github.com/php-embed/Embed/compare/v4.6.1...v4.6.2
 [4.6.1]: https://github.com/php-embed/Embed/compare/v4.6.0...v4.6.1
 [4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.6.0
 [4.5.4]: https://github.com/php-embed/Embed/compare/v4.5.3...v4.5.4
