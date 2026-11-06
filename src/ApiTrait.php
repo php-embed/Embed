@@ -104,13 +104,35 @@ trait ApiTrait
 
     public function url(string ...$keys): ?UriInterface
     {
-        $url = $this->str(...$keys);
+        $url = $this->rawUrl(...$keys);
 
         try {
             return $url !== null ? $this->extractor->resolveUri($url) : null;
         } catch (Throwable $error) {
             return null;
         }
+    }
+
+    /**
+     * Inner spaces are part of the URL, so they are kept (and later encoded)
+     * instead of being collapsed like in str(). Tabs and line breaks are
+     * removed, as browsers do.
+     */
+    private function rawUrl(string ...$keys): ?string
+    {
+        $value = $this->get(...$keys);
+
+        if (is_array($value)) {
+            $value = array_shift($value);
+        }
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $value = trim(str_replace(["\t", "\r", "\n"], '', $value));
+
+        return $value === '' ? null : $value;
     }
 
     public function time(string ...$keys): ?DateTime
