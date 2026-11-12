@@ -181,6 +181,42 @@ $result->setSettings([
 $oembed = $info->getOEmbed();
 ```
 
+### Checking the oEmbed result
+
+`getOEmbed()` always returns an `OEmbed` object. When no endpoint was found, the request could not be sent or the response is not valid JSON or XML, `all()` returns an empty array:
+
+```php
+$oembed = $info->getOEmbed();
+
+if ($oembed->all() === []) {
+    // No oEmbed data for this URL
+}
+```
+
+Some providers answer with partial data instead of an error, so check the fields you need too (for example `$oembed->str('title')`).
+
+### Vimeo videos with domain-level privacy
+
+Vimeo videos that can only be embedded on some domains return a simplified oEmbed response (no title, author, thumbnail or description) with `"domain_status_code": 403`. To get the full data, send a `Referer` from one of the allowed domains. Extra headers set on the crawler are sent with every request, including the oEmbed one, and a `Referer` set this way is kept when a request follows redirects:
+
+```php
+use Embed\Embed;
+
+$embed = new Embed();
+$embed->getCrawler()->addDefaultHeaders([
+    'Referer' => 'https://www.your-allowed-domain.com/',
+]);
+
+$info = $embed->get('https://vimeo.com/123456789');
+$oembed = $info->getOEmbed();
+
+if ($oembed->int('domain_status_code') === 403) {
+    // The Referer is not an allowed domain for this video
+}
+```
+
+`domain_status_code` is only present for videos with domain-level privacy, and it is `200` when the `Referer` is allowed. Videos that cannot be embedded at all, or that are private, return HTTP 403 or 404 and no oEmbed data.
+
 ## LinkedData
 
 Another API available by default, used to extract info using the [JsonLD](https://www.w3.org/TR/json-ld/) schema.
