@@ -51,6 +51,7 @@ final class CurlDispatcher
     private bool $prereqBlocked = false;
     private bool $closed = false;
     private int $followed = 0;
+    private bool $explicitReferer;
 
     /**
      * @param array<string, mixed> $settings
@@ -259,6 +260,7 @@ final class CurlDispatcher
         }
 
         $this->request = $request;
+        $this->explicitReferer = $request->getHeaderLine('Referer') !== '';
         $this->settings = $settings;
         $this->pinnedIps = $pinnedIps;
         $this->policy = $policy;
@@ -481,6 +483,13 @@ final class CurlDispatcher
         $nextHost = strtolower($this->bareHost($resolved->getHost()));
         if ($currentHost !== $nextHost) {
             $request = $request->withoutHeader('Authorization')->withoutHeader('Cookie');
+        }
+
+        // A Referer set by the caller (for example for Vimeo videos with
+        // domain-level privacy) is kept on every hop, like browsers do.
+        // Without one, each hop gets the previous URL.
+        if ($this->explicitReferer) {
+            return $request;
         }
 
         return $request->withHeader('Referer', (string) $current);
