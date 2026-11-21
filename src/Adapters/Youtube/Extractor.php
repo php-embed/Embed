@@ -14,6 +14,7 @@ class Extractor extends Base
     {
         return [
             'feeds' => new Detectors\Feeds($this),
+            'image' => new Detectors\Image($this),
         ];
     }
 }
