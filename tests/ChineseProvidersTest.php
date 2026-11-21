@@ -12,7 +12,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Bilibili, Youku and NetEase Music adapters [#243].
+ * Bilibili, Youku, NetEase Music and Tencent Video adapters [#243].
  *
  * The player iframes are built from the URL alone, so these tests use
  * offline pages. Youku and NetEase real pages are covered by PagesTest
@@ -220,6 +220,40 @@ class ChineseProvidersTest extends TestCase
     /**
      * @param array<string, string> $routes path => body
      */
+    /**
+     * @dataProvider tencentVideoUrlProvider
+     */
+    public function testTencentVideoBuildsPlayerIframe(string $url, string $path): void
+    {
+        $info = $this->embed([$path => '<!DOCTYPE html><html><head><title>腾讯视频</title></head><body></body></html>'])
+            ->get($url);
+
+        $this->assertNotNull($info->code);
+        $this->assertSame(
+            '<iframe src="https://v.qq.com/txp/iframe/player.html?vid=w41029n1rrv" frameborder="0" allowfullscreen="true" scrolling="no" width="640" height="360"></iframe>',
+            $info->code->html
+        );
+        $this->assertSame(640, $info->code->width);
+        $this->assertSame(360, $info->code->height);
+    }
+
+    public function tencentVideoUrlProvider(): array
+    {
+        return [
+            'cover' => ['https://v.qq.com/x/cover/mzc002001bk7moh/w41029n1rrv.html', '/x/cover/mzc002001bk7moh/w41029n1rrv.html'],
+            'page' => ['https://v.qq.com/x/page/w41029n1rrv.html', '/x/page/w41029n1rrv.html'],
+            'cover with vid' => ['https://v.qq.com/x/cover/mzc002001bk7moh.html?vid=w41029n1rrv', '/x/cover/mzc002001bk7moh.html'],
+        ];
+    }
+
+    public function testTencentVideoCoverWithoutVidHasNoIframe(): void
+    {
+        $info = $this->embed(['/x/cover/mzc002001bk7moh.html' => '<!DOCTYPE html><html><head><title>腾讯视频</title></head><body></body></html>'])
+            ->get('https://v.qq.com/x/cover/mzc002001bk7moh.html');
+
+        $this->assertNull($info->code);
+    }
+
     private function embed(array $routes): Embed
     {
         $this->client = $client = new RecordingClient(static function (RequestInterface $request) use ($routes): ResponseInterface {

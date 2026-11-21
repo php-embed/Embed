@@ -37,6 +37,7 @@ class ExtractorFactory
         'bilibili.com' => Adapters\Bilibili\Extractor::class,
         'youku.com' => Adapters\Youku\Extractor::class,
         'music.163.com' => Adapters\NetEase\Extractor::class,
+        'v.qq.com' => Adapters\TencentVideo\Extractor::class,
         'drive.google.com' => Adapters\GoogleDrive\Extractor::class,
     ];
     /** @var array<string, class-string<Detectors\Detector<Extractor>>> */
