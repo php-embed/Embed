@@ -28,6 +28,7 @@ class ExtractorFactory
         'instagram.com' => Adapters\Instagram\Extractor::class,
         'imageshack.com' => Adapters\ImageShack\Extractor::class,
         'youtube.com' => Adapters\Youtube\Extractor::class,
+        'vimeo.com' => Adapters\Vimeo\Extractor::class,
         'twitch.tv' => Adapters\Twitch\Extractor::class,
         'kick.com' => Adapters\Kick\Extractor::class,
         'bandcamp.com' => Adapters\Bandcamp\Extractor::class,

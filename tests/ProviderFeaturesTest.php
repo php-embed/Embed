@@ -102,6 +102,51 @@ class ProviderFeaturesTest extends TestCase
     }
 
     /**
+     * @dataProvider vimeoThumbnailProvider
+     */
+    public function testVimeoUsesTheFullSizeThumbnail(string $thumbnail, string $expected): void
+    {
+        $info = $this->embed([
+            'vimeo.com/76979871' => $this->page(''),
+            'vimeo.com/api/oembed.json' => ['application/json', (string) json_encode([
+                'type' => 'video',
+                'title' => 'Video',
+                'thumbnail_url' => $thumbnail,
+                'thumbnail_width' => 295,
+                'thumbnail_height' => 166,
+            ])],
+        ])->get('https://vimeo.com/76979871');
+
+        $this->assertSame($expected, (string) $info->image);
+    }
+
+    public function vimeoThumbnailProvider(): array
+    {
+        return [
+            'current' => [
+                'https://i.vimeocdn.com/video/452001751-8216e0571c251a09d7a8387550942d89f7f86f6398f8ed886e639b0dd50d3c90-d_295x166?region=us',
+                'https://i.vimeocdn.com/video/452001751-8216e0571c251a09d7a8387550942d89f7f86f6398f8ed886e639b0dd50d3c90-d?region=us',
+            ],
+            'width only' => [
+                'https://i.vimeocdn.com/video/452001751-8216e0571c251a09d7a8387550942d89f7f86f6398f8ed886e639b0dd50d3c90-d_640',
+                'https://i.vimeocdn.com/video/452001751-8216e0571c251a09d7a8387550942d89f7f86f6398f8ed886e639b0dd50d3c90-d',
+            ],
+            'legacy' => [
+                'https://i.vimeocdn.com/video/938592587_295x166.jpg',
+                'https://i.vimeocdn.com/video/938592587.jpg',
+            ],
+            'full size' => [
+                'https://i.vimeocdn.com/video/938592587.jpg',
+                'https://i.vimeocdn.com/video/938592587.jpg',
+            ],
+            'other host' => [
+                'https://example.com/video/938592587_295x166.jpg',
+                'https://example.com/video/938592587_295x166.jpg',
+            ],
+        ];
+    }
+
+    /**
      * @param array<string, string|array{0: string, 1: string}> $routes host+path => html, or [content type, body]
      * @param array<string, mixed> $settings
      */
