@@ -59,6 +59,8 @@ class PagesTest extends PagesTestCase
             ['https://v.youku.com/v_show/id_XNTk1MTU4MDQ0OA==.html'],
             ['https://music.163.com/song?id=186016'],
             ['https://music.163.com/#/album?id=18905'],
+            ['https://v.qq.com/x/cover/mzc002001bk7moh/w41029n1rrv.html'],
+            ['https://drive.google.com/file/d/1sF_h2x3lULc-fV4FK9FRCnnF60XkXuz2/view'],
         ];
     }
 
