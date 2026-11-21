@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.7.0] - 2026-11-20
+### Added
+- YouTube: `$info->image` is `maxresdefault.jpg` when the video page links it in `og:image`, instead of the oEmbed `hqdefault.jpg` with black bars [#535]
+- YouTube: the start (`t=` or `start=`) and end (`end=`) times of the URL are kept in the player URL, in seconds or in the `1m30s` format [#268]
+- Vimeo adapter: `$info->image` is the full size thumbnail instead of the one resized to the player width (like `_295x166`) [#391]
+- Google Drive adapter: shared files (`drive.google.com/file/d/<id>/view` and `drive.google.com/open?id=<id>`) get the `/preview` iframe of Drive's "Embed item" option. Files that need a login get no code [#408]
+- Tencent Video adapter: `v.qq.com/x/cover/<cid>/<vid>.html`, `v.qq.com/x/page/<vid>.html` and `v.qq.com/x/cover/<cid>.html?vid=<vid>` URLs get a `v.qq.com/txp/iframe/player.html` iframe built from the URL [#243]
+- README section about the results that are specific to some sites, and how to get `null` instead of the provider name fallback [#462]
+
+### Changed
+- The provider name is also read from the `application-name` and `apple-mobile-web-app-title` metas before falling back to the domain name, and the fallback skips `www` (`www.gov.pt` was "Www") [#462]
+
 ## [4.6.3] - 2026-11-20
 ### Fixed
 - A `Referer` header set by the caller (for example with `addDefaultHeaders()`) is kept when a request follows redirects, instead of being replaced by the previous URL. Vimeo videos with domain-level privacy need it to return their title, thumbnail and other metadata [#377] [#567]
@@ -385,7 +397,13 @@ Full library refactoring.
 [#567]: https://github.com/php-embed/Embed/issues/567
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
+[#268]: https://github.com/php-embed/Embed/issues/268
+[#391]: https://github.com/php-embed/Embed/issues/391
+[#408]: https://github.com/php-embed/Embed/issues/408
+[#462]: https://github.com/php-embed/Embed/issues/462
+[#535]: https://github.com/php-embed/Embed/issues/535
 
+[4.7.0]: https://github.com/php-embed/Embed/compare/v4.6.3...v4.7.0
 [4.6.3]: https://github.com/php-embed/Embed/compare/v4.6.2...v4.6.3
 [4.6.2]: https://github.com/php-embed/Embed/compare/v4.6.1...v4.6.2
 [4.6.1]: https://github.com/php-embed/Embed/compare/v4.6.0...v4.6.1
