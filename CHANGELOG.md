@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.3] - 2026-11-12
+### Fixed
+- A `Referer` header set by the caller (for example with `addDefaultHeaders()`) is kept when a request follows redirects, instead of being replaced by the previous URL. Vimeo videos with domain-level privacy need it to return their title, thumbnail and other metadata [#377] [#567]
+
+### Added
+- README section about Vimeo videos with domain-level privacy: how to send the `Referer` of an allowed domain, how to read Vimeo's `domain_status_code` and how to tell when the oEmbed request returned no data [#377] [#567]
+
 ## [4.6.2] - 2026-11-06
 ### Added
 - README section about the HTTP layer: how `Crawler`, `CurlClient` and `CurlDispatcher` fit together, the v4 setting for each v3 `CURLOPT_*` option, extra headers, and how to wrap the client instead of extending the dispatcher [#445]
@@ -374,9 +381,12 @@ Full library refactoring.
 [#520]: https://github.com/php-embed/Embed/issues/520
 [#524]: https://github.com/php-embed/Embed/issues/524
 [#536]: https://github.com/php-embed/Embed/issues/536
+[#377]: https://github.com/php-embed/Embed/issues/377
+[#567]: https://github.com/php-embed/Embed/issues/567
 [#574]: https://github.com/oscarotero/Embed/issues/574
 [#577]: https://github.com/oscarotero/Embed/issues/577
 
+[4.6.3]: https://github.com/php-embed/Embed/compare/v4.6.2...v4.6.3
 [4.6.2]: https://github.com/php-embed/Embed/compare/v4.6.1...v4.6.2
 [4.6.1]: https://github.com/php-embed/Embed/compare/v4.6.0...v4.6.1
 [4.6.0]: https://github.com/php-embed/Embed/compare/v4.5.4...v4.6.0

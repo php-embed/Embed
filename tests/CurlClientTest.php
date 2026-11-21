@@ -375,6 +375,33 @@ class CurlClientTest extends TestCase
         $this->assertStringContainsString('consent=yes', $rows[1]['cookie']);
     }
 
+    public function testExplicitRefererIsKeptAcrossRedirects(): void
+    {
+        $factory = new Psr17Factory();
+        $request = $factory->createRequest('GET', $this->url('/go?code=302&to='.rawurlencode('/landed')))
+            ->withHeader('Referer', 'https://www.example.com/');
+
+        $response = $this->client()->sendRequest($request);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $rows = self::$server->requests();
+        $this->assertCount(2, $rows);
+        $this->assertSame('https://www.example.com/', $rows[0]['referer']);
+        $this->assertSame('https://www.example.com/', $rows[1]['referer']);
+    }
+
+    public function testRefererIsThePreviousUrlWhenNoneIsSet(): void
+    {
+        $start = $this->url('/go?code=302&to='.rawurlencode('/landed'));
+        $response = $this->client()->sendRequest($this->request($start));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $rows = self::$server->requests();
+        $this->assertCount(2, $rows);
+        $this->assertSame('', $rows[0]['referer']);
+        $this->assertSame($start, $rows[1]['referer']);
+    }
+
     public function testAuthorizationAndCookieAreStrippedWhenTheHostChanges(): void
     {
         $factory = new Psr17Factory();
