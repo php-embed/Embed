@@ -192,6 +192,57 @@ class ProviderFeaturesTest extends TestCase
         $this->assertNull($info->code);
     }
 
+    public function testProviderNameFromApplicationName(): void
+    {
+        $info = $this->embed([
+            'eportugal.gov.pt/' => $this->page('<meta name="application-name" content="ePortugal">'),
+        ])->get('https://eportugal.gov.pt/');
+
+        $this->assertSame('ePortugal', $info->providerName);
+    }
+
+    public function testProviderNameFromAppleWebAppTitle(): void
+    {
+        $info = $this->embed([
+            'eportugal.gov.pt/' => $this->page('<meta name="apple-mobile-web-app-title" content="ePortugal">'),
+        ])->get('https://eportugal.gov.pt/');
+
+        $this->assertSame('ePortugal', $info->providerName);
+    }
+
+    public function testProviderNamePrefersSiteName(): void
+    {
+        $info = $this->embed([
+            'eportugal.gov.pt/' => $this->page(
+                '<meta property="og:site_name" content="ePortugal.gov.pt">'
+                .'<meta name="application-name" content="ePortugal">'
+            ),
+        ])->get('https://eportugal.gov.pt/');
+
+        $this->assertSame('ePortugal.gov.pt', $info->providerName);
+    }
+
+    /**
+     * @dataProvider providerNameFallbackProvider
+     */
+    public function testProviderNameFallbackSkipsWww(string $url, string $expected): void
+    {
+        $uri = (new Psr17Factory())->createUri($url);
+        $info = $this->embed([$uri->getHost().'/' => $this->page('')])->get($url);
+
+        $this->assertSame($expected, $info->providerName);
+    }
+
+    public function providerNameFallbackProvider(): array
+    {
+        return [
+            'www under a public suffix' => ['https://www.gov.pt/', 'Gov'],
+            'subdomain under a public suffix' => ['https://eportugal.gov.pt/', 'Eportugal'],
+            'www' => ['https://www.example.com/', 'Example'],
+            'www under co.uk' => ['https://www.example.co.uk/', 'Example'],
+        ];
+    }
+
     /**
      * @param array<string, string|array{0: string, 1: string}> $routes host+path => html, or [content type, body]
      * @param array<string, mixed> $settings

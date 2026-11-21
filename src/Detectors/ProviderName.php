@@ -32,12 +32,21 @@ class ProviderName extends Detector
             return $result;
         }
 
+        // Names that sites give to themselves when added to a home screen
+        $result = $metas->str('application-name', 'apple-mobile-web-app-title');
+        if (is_string($result) && trim($result) !== '') {
+            return $result;
+        }
+
         return ucfirst($this->fallback());
     }
 
     private function fallback(): string
     {
         $host = $this->extractor->getUri()->getHost();
+
+        // "www" is never the name of a site, even under suffixes like gov.pt
+        $host = (string) preg_replace('/^www\d*\./i', '', $host);
 
         $host = array_reverse(explode('.', $host));
 
