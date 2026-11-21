@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Vimeo adapter: `$info->image` is the full size thumbnail instead of the one resized to the player width (like `_295x166`) [#391]
 - Google Drive adapter: shared files (`drive.google.com/file/d/<id>/view` and `drive.google.com/open?id=<id>`) get the `/preview` iframe of Drive's "Embed item" option. Files that need a login get no code [#408]
 - Tencent Video adapter: `v.qq.com/x/cover/<cid>/<vid>.html`, `v.qq.com/x/page/<vid>.html` and `v.qq.com/x/cover/<cid>.html?vid=<vid>` URLs get a `v.qq.com/txp/iframe/player.html` iframe built from the URL [#243]
+- Youku adapter: `play.tudou.com/v_show/id_<ID>.html` and other `tudou.com` URLs with the same path also get a `player.youku.com/embed` iframe [#243]
 - README section about the results that are specific to some sites, and how to get `null` instead of the provider name fallback [#462]
+- README note about Reddit: cloud and datacenter IPs often get 403; from a residential IP, oEmbed still provides title, author and code, but not image or description [#521]
 
 ### Changed
 - The provider name is also read from the `application-name` and `apple-mobile-web-app-title` metas before falling back to the domain name, and the fallback skips `www` (`www.gov.pt` was "Www") [#462]

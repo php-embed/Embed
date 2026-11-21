@@ -12,10 +12,10 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Bilibili, Youku, NetEase Music and Tencent Video adapters [#243].
+ * Bilibili, Youku, Tudou, NetEase Music and Tencent Video adapters [#243].
  *
  * The player iframes are built from the URL alone, so these tests use
- * offline pages. Youku and NetEase real pages are covered by PagesTest
+ * offline pages. Youku, Tudou and NetEase real pages are covered by PagesTest
  * snapshots captured from a residential connection in Venezuela. Bilibili
  * served its error page there too, so its real metadata is not covered.
  */
@@ -123,6 +123,40 @@ class ChineseProvidersTest extends TestCase
 
         $this->assertNotNull($info->code);
         $this->assertStringContainsString('player.youku.com/embed/', $info->code->html);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public function tudouUrlProvider(): array
+    {
+        return [
+            'play' => ['https://play.tudou.com/v_show/id_XNjU2OTUwNzk2MA==.html', '/v_show/id_XNjU2OTUwNzk2MA==.html'],
+            'www' => ['https://www.tudou.com/v_show/id_XNjU2OTUwNzk2MA==.html', '/v_show/id_XNjU2OTUwNzk2MA==.html'],
+        ];
+    }
+
+    /**
+     * @dataProvider tudouUrlProvider
+     */
+    public function testTudouBuildsPlayerIframe(string $url, string $path): void
+    {
+        $info = $this->embed([$path => $this->page('')])->get($url);
+
+        $this->assertNotNull($info->code);
+        $this->assertSame(
+            '<iframe src="https://player.youku.com/embed/XNjU2OTUwNzk2MA%3D%3D" frameborder="0" allowfullscreen="true" scrolling="no" width="640" height="360"></iframe>',
+            $info->code->html
+        );
+        $this->assertSame(640, $info->code->width);
+        $this->assertSame(360, $info->code->height);
+    }
+
+    public function testTudouHomeHasNoPlayer(): void
+    {
+        $info = $this->embed(['/' => $this->page('')])->get('https://www.tudou.com/');
+
+        $this->assertNull($info->code);
     }
 
     /**

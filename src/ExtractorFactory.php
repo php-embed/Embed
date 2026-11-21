@@ -36,6 +36,7 @@ class ExtractorFactory
         'x.com' => Adapters\Twitter\Extractor::class,
         'bilibili.com' => Adapters\Bilibili\Extractor::class,
         'youku.com' => Adapters\Youku\Extractor::class,
+        'tudou.com' => Adapters\Youku\Extractor::class,
         'music.163.com' => Adapters\NetEase\Extractor::class,
         'v.qq.com' => Adapters\TencentVideo\Extractor::class,
         'drive.google.com' => Adapters\GoogleDrive\Extractor::class,
