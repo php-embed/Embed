@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.6.3] - 2026-11-12
+## [4.6.3] - 2026-11-20
 ### Fixed
 - A `Referer` header set by the caller (for example with `addDefaultHeaders()`) is kept when a request follows redirects, instead of being replaced by the previous URL. Vimeo videos with domain-level privacy need it to return their title, thumbnail and other metadata [#377] [#567]
 
