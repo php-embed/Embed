@@ -147,6 +147,52 @@ class ProviderFeaturesTest extends TestCase
     }
 
     /**
+     * @dataProvider googleDriveUrlProvider
+     */
+    public function testGoogleDriveBuildsPreviewIframe(string $url, string $path): void
+    {
+        $info = $this->embed([
+            'drive.google.com'.$path => $this->page('<meta property="og:title" content="video.mp4">'),
+        ])->get($url);
+
+        $this->assertNotNull($info->code);
+        $this->assertSame(
+            '<iframe src="https://drive.google.com/file/d/1A2b3C4d5E6f7G8h9I0jKlMnOpQrStUvW/preview" width="640" height="480" allow="autoplay" frameborder="0" allowfullscreen="true"></iframe>',
+            $info->code->html
+        );
+        $this->assertSame(640, $info->code->width);
+        $this->assertSame(480, $info->code->height);
+    }
+
+    public function googleDriveUrlProvider(): array
+    {
+        $id = '1A2b3C4d5E6f7G8h9I0jKlMnOpQrStUvW';
+
+        return [
+            'view' => ["https://drive.google.com/file/d/{$id}/view?usp=sharing", "/file/d/{$id}/view"],
+            'edit' => ["https://drive.google.com/file/d/{$id}/edit", "/file/d/{$id}/edit"],
+            'user' => ["https://drive.google.com/file/u/1/d/{$id}/view", "/file/u/1/d/{$id}/view"],
+            'open' => ["https://drive.google.com/open?id={$id}", '/open'],
+        ];
+    }
+
+    public function testGoogleDriveWithoutAccessHasNoIframe(): void
+    {
+        $info = $this->embed([])->get('https://drive.google.com/file/d/1A2b3C4d5E6f7G8h9I0jKlMnOpQrStUvW/view');
+
+        $this->assertNull($info->code);
+    }
+
+    public function testGoogleDriveFolderHasNoIframe(): void
+    {
+        $info = $this->embed([
+            'drive.google.com/drive/folders/1A2b3C4d5E6f7G8h9I0jKlMnOpQrStUvW' => $this->page(''),
+        ])->get('https://drive.google.com/drive/folders/1A2b3C4d5E6f7G8h9I0jKlMnOpQrStUvW');
+
+        $this->assertNull($info->code);
+    }
+
+    /**
      * @param array<string, string|array{0: string, 1: string}> $routes host+path => html, or [content type, body]
      * @param array<string, mixed> $settings
      */
