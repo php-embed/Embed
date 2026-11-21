@@ -51,6 +51,56 @@ class ProviderFeaturesTest extends TestCase
         $this->assertSame("https://i.ytimg.com/vi/{$id}/hqdefault.jpg", (string) $info->image);
     }
 
+    public function testYoutubeAddsTheEndTimeToThePlayer(): void
+    {
+        $id = self::YOUTUBE_ID;
+        $info = $this->embed([
+            'www.youtube.com/watch' => $this->page(''),
+            'www.youtube.com/oembed' => $this->youtubeOEmbed("https://www.youtube.com/embed/{$id}?start=10&feature=oembed"),
+        ])->get("https://www.youtube.com/watch?v={$id}&start=10&end=20");
+
+        $this->assertNotNull($info->code);
+        $this->assertStringContainsString("src=\"https://www.youtube.com/embed/{$id}?start=10&feature=oembed&end=20\"", $info->code->html);
+        $this->assertSame(200, $info->code->width);
+        $this->assertSame(113, $info->code->height);
+    }
+
+    public function testYoutubeAcceptsTheEndTimeInMinutesAndSeconds(): void
+    {
+        $id = self::YOUTUBE_ID;
+        $info = $this->embed([
+            'www.youtube.com/watch' => $this->page(''),
+            'www.youtube.com/oembed' => $this->youtubeOEmbed("https://www.youtube.com/embed/{$id}"),
+        ])->get("https://www.youtube.com/watch?v={$id}&end=1m30s");
+
+        $this->assertNotNull($info->code);
+        $this->assertStringContainsString("src=\"https://www.youtube.com/embed/{$id}?end=90\"", $info->code->html);
+    }
+
+    public function testYoutubeAddsTheStartTimeWhenOEmbedDropsIt(): void
+    {
+        $id = self::YOUTUBE_ID;
+        $info = $this->embed([
+            'www.youtube.com/watch' => $this->page(''),
+            'www.youtube.com/oembed' => $this->youtubeOEmbed(),
+        ])->get("https://www.youtube.com/watch?v={$id}&t=1m5s&end=90");
+
+        $this->assertNotNull($info->code);
+        $this->assertStringContainsString("src=\"https://www.youtube.com/embed/{$id}?feature=oembed&start=65&end=90\"", $info->code->html);
+    }
+
+    public function testYoutubeWithoutEndTimeKeepsTheOEmbedCode(): void
+    {
+        $id = self::YOUTUBE_ID;
+        $info = $this->embed([
+            'www.youtube.com/watch' => $this->page(''),
+            'www.youtube.com/oembed' => $this->youtubeOEmbed(),
+        ])->get("https://www.youtube.com/watch?v={$id}&end=soon");
+
+        $this->assertNotNull($info->code);
+        $this->assertStringContainsString("src=\"https://www.youtube.com/embed/{$id}?feature=oembed\"", $info->code->html);
+    }
+
     /**
      * @param array<string, string|array{0: string, 1: string}> $routes host+path => html, or [content type, body]
      * @param array<string, mixed> $settings
