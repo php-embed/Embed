@@ -28,6 +28,7 @@ class ExtractorFactory
         'instagram.com' => Adapters\Instagram\Extractor::class,
         'imageshack.com' => Adapters\ImageShack\Extractor::class,
         'youtube.com' => Adapters\Youtube\Extractor::class,
+        'vimeo.com' => Adapters\Vimeo\Extractor::class,
         'twitch.tv' => Adapters\Twitch\Extractor::class,
         'kick.com' => Adapters\Kick\Extractor::class,
         'bandcamp.com' => Adapters\Bandcamp\Extractor::class,
@@ -35,7 +36,10 @@ class ExtractorFactory
         'x.com' => Adapters\Twitter\Extractor::class,
         'bilibili.com' => Adapters\Bilibili\Extractor::class,
         'youku.com' => Adapters\Youku\Extractor::class,
+        'tudou.com' => Adapters\Youku\Extractor::class,
         'music.163.com' => Adapters\NetEase\Extractor::class,
+        'v.qq.com' => Adapters\TencentVideo\Extractor::class,
+        'drive.google.com' => Adapters\GoogleDrive\Extractor::class,
     ];
     /** @var array<string, class-string<Detectors\Detector<Extractor>>> */
     private array $customDetectors = [];

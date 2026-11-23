@@ -12,10 +12,10 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Bilibili, Youku and NetEase Music adapters [#243].
+ * Bilibili, Youku, Tudou, NetEase Music and Tencent Video adapters [#243].
  *
  * The player iframes are built from the URL alone, so these tests use
- * offline pages. Youku and NetEase real pages are covered by PagesTest
+ * offline pages. Youku, Tudou and NetEase real pages are covered by PagesTest
  * snapshots captured from a residential connection in Venezuela. Bilibili
  * served its error page there too, so its real metadata is not covered.
  */
@@ -126,6 +126,40 @@ class ChineseProvidersTest extends TestCase
     }
 
     /**
+     * @return array<string, array{string, string}>
+     */
+    public function tudouUrlProvider(): array
+    {
+        return [
+            'play' => ['https://play.tudou.com/v_show/id_XNjU2OTUwNzk2MA==.html', '/v_show/id_XNjU2OTUwNzk2MA==.html'],
+            'www' => ['https://www.tudou.com/v_show/id_XNjU2OTUwNzk2MA==.html', '/v_show/id_XNjU2OTUwNzk2MA==.html'],
+        ];
+    }
+
+    /**
+     * @dataProvider tudouUrlProvider
+     */
+    public function testTudouBuildsPlayerIframe(string $url, string $path): void
+    {
+        $info = $this->embed([$path => $this->page('')])->get($url);
+
+        $this->assertNotNull($info->code);
+        $this->assertSame(
+            '<iframe src="https://player.youku.com/embed/XNjU2OTUwNzk2MA%3D%3D" frameborder="0" allowfullscreen="true" scrolling="no" width="640" height="360"></iframe>',
+            $info->code->html
+        );
+        $this->assertSame(640, $info->code->width);
+        $this->assertSame(360, $info->code->height);
+    }
+
+    public function testTudouHomeHasNoPlayer(): void
+    {
+        $info = $this->embed(['/' => $this->page('')])->get('https://www.tudou.com/');
+
+        $this->assertNull($info->code);
+    }
+
+    /**
      * @return array<array{string, int, string}>
      */
     public function netEaseUrlProvider(): array
@@ -220,6 +254,40 @@ class ChineseProvidersTest extends TestCase
     /**
      * @param array<string, string> $routes path => body
      */
+    /**
+     * @dataProvider tencentVideoUrlProvider
+     */
+    public function testTencentVideoBuildsPlayerIframe(string $url, string $path): void
+    {
+        $info = $this->embed([$path => '<!DOCTYPE html><html><head><title>腾讯视频</title></head><body></body></html>'])
+            ->get($url);
+
+        $this->assertNotNull($info->code);
+        $this->assertSame(
+            '<iframe src="https://v.qq.com/txp/iframe/player.html?vid=w41029n1rrv" frameborder="0" allowfullscreen="true" scrolling="no" width="640" height="360"></iframe>',
+            $info->code->html
+        );
+        $this->assertSame(640, $info->code->width);
+        $this->assertSame(360, $info->code->height);
+    }
+
+    public function tencentVideoUrlProvider(): array
+    {
+        return [
+            'cover' => ['https://v.qq.com/x/cover/mzc002001bk7moh/w41029n1rrv.html', '/x/cover/mzc002001bk7moh/w41029n1rrv.html'],
+            'page' => ['https://v.qq.com/x/page/w41029n1rrv.html', '/x/page/w41029n1rrv.html'],
+            'cover with vid' => ['https://v.qq.com/x/cover/mzc002001bk7moh.html?vid=w41029n1rrv', '/x/cover/mzc002001bk7moh.html'],
+        ];
+    }
+
+    public function testTencentVideoCoverWithoutVidHasNoIframe(): void
+    {
+        $info = $this->embed(['/x/cover/mzc002001bk7moh.html' => '<!DOCTYPE html><html><head><title>腾讯视频</title></head><body></body></html>'])
+            ->get('https://v.qq.com/x/cover/mzc002001bk7moh.html');
+
+        $this->assertNull($info->code);
+    }
+
     private function embed(array $routes): Embed
     {
         $this->client = $client = new RecordingClient(static function (RequestInterface $request) use ($routes): ResponseInterface {

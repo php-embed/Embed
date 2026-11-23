@@ -54,11 +54,14 @@ class PagesTest extends PagesTestCase
             ['https://www.itmedia.co.jp/news/articles/2410/28/news159.html'],
             ['https://4pda.to/2022/12/04/406834/sostoyalsya_reliz_clown_of_duty_parodii_na_call_of_duty/'],
             // Bilibili snapshot comes from a restricted network, where it serves its error
-            // page. Youku and NetEase were captured from a residential connection in Venezuela.
+            // page. Youku, Tudou and NetEase were captured from a residential connection in Venezuela.
             ['https://www.bilibili.com/video/BV1GJ411x7h7'],
             ['https://v.youku.com/v_show/id_XNTk1MTU4MDQ0OA==.html'],
+            ['https://play.tudou.com/v_show/id_XNjU2OTUwNzk2MA==.html'],
             ['https://music.163.com/song?id=186016'],
             ['https://music.163.com/#/album?id=18905'],
+            ['https://v.qq.com/x/cover/mzc002001bk7moh/w41029n1rrv.html'],
+            ['https://drive.google.com/file/d/1sF_h2x3lULc-fV4FK9FRCnnF60XkXuz2/view'],
         ];
     }
 
