@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.7.0] - 2026-11-20
+## [4.7.0] - 2026-11-23
 ### Added
 - YouTube: `$info->image` is `maxresdefault.jpg` when the video page links it in `og:image`, instead of the oEmbed `hqdefault.jpg` with black bars [#535]
 - YouTube: the start (`t=` or `start=`) and end (`end=`) times of the URL are kept in the player URL, in seconds or in the `1m30s` format [#268]
