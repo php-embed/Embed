@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.0] - 2026-11-25
+### Changed
+- JSON-LD is read by a small built-in expander. The unmaintained `ml/json-ld` dependency is no longer used. Remote `@context` URLs are still never fetched; schema.org contexts stay bundled. `$info->getLinkedData()` (`get`, `getAll`, `all`) is unchanged [#554] [#582]
+
+### Fixed
+- PHP 8.4 and 8.5 no longer emit deprecations while reading JSON-LD [#554] [#582]
+
 ## [4.7.0] - 2026-11-23
 ### Added
 - YouTube: `$info->image` is `maxresdefault.jpg` when the video page links it in `og:image`, instead of the oEmbed `hqdefault.jpg` with black bars [#535]

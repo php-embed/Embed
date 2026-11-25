@@ -8,7 +8,7 @@ use Embed\Embed;
 use Embed\Http\Crawler;
 use Embed\Http\UrlPolicy;
 use Embed\JsonLd\DocumentLoader;
-use ML\JsonLD\Exception\JsonLdException;
+use Embed\JsonLd\JsonLdException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
