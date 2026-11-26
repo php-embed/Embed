@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.8.0] - 2026-11-25
+## [4.8.0] - 2026-11-26
 ### Changed
 - JSON-LD is read by a small built-in expander. The unmaintained `ml/json-ld` dependency is no longer used. Remote `@context` URLs are still never fetched; schema.org contexts stay bundled. `$info->getLinkedData()` (`get`, `getAll`, `all`) is unchanged [#554] [#582]
 
@@ -412,6 +412,7 @@ Full library refactoring.
 [#462]: https://github.com/php-embed/Embed/issues/462
 [#535]: https://github.com/php-embed/Embed/issues/535
 
+[4.8.0]: https://github.com/php-embed/Embed/compare/v4.7.0...v4.8.0
 [4.7.0]: https://github.com/php-embed/Embed/compare/v4.6.3...v4.7.0
 [4.6.3]: https://github.com/php-embed/Embed/compare/v4.6.2...v4.6.3
 [4.6.2]: https://github.com/php-embed/Embed/compare/v4.6.1...v4.6.2
