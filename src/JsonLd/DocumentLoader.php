@@ -3,23 +3,15 @@ declare(strict_types = 1);
 
 namespace Embed\JsonLd;
 
-use ML\JsonLD\DocumentLoaderInterface;
-use ML\JsonLD\Exception\JsonLdException;
-use ML\JsonLD\Processor;
-use ML\JsonLD\RemoteDocument;
-
 /**
  * JSON-LD document loader that never touches the network or the filesystem.
  *
- * LinkedData passes this as the documentLoader option. The global
- * JsonLD::setDefaultDocumentLoader() is not used, so a host application
- * keeps its own loader.
- *
- * schema.org context URLs are answered with a bundled vocabulary of
- * {"@context":{"@vocab":"http://schema.org/"}}. Every other remote URL or
- * path raises JsonLdException, which LinkedData already catches.
+ * The expander uses this when a document names a remote `@context`. schema.org
+ * context URLs are answered with a bundled vocabulary of
+ * {"@context":{"@vocab":"http://schema.org/"}}. Every other remote URL or path
+ * raises JsonLdException, which LinkedData already catches.
  */
-final class DocumentLoader implements DocumentLoaderInterface
+final class DocumentLoader
 {
     private const SCHEMA_CONTEXT = '{"@context":{"@vocab":"http://schema.org/"}}';
 
@@ -34,24 +26,32 @@ final class DocumentLoader implements DocumentLoaderInterface
      * @param string $url
      *
      * @throws JsonLdException
-     *
-     * @return RemoteDocument
      */
-    public function loadDocument($url)
+    public function loadDocument(string $url): RemoteDocument
     {
         $trimmed = trim($url);
         if (isset($trimmed[0]) && ($trimmed[0] === '{' || $trimmed[0] === '[')) {
-            return new RemoteDocument($url, Processor::parse($trimmed));
+            return new RemoteDocument($url, self::parseJson($trimmed));
         }
 
         if ($this->isSchemaOrgContext($trimmed)) {
-            return new RemoteDocument($url, Processor::parse(self::SCHEMA_CONTEXT), 'application/ld+json');
+            return new RemoteDocument($url, self::parseJson(self::SCHEMA_CONTEXT));
         }
 
-        throw new JsonLdException(
-            JsonLdException::LOADING_REMOTE_CONTEXT_FAILED,
-            'Remote JSON-LD documents are not loaded.'
-        );
+        throw new JsonLdException('Remote JSON-LD documents are not loaded.');
+    }
+
+    /**
+     * @return mixed
+     */
+    private static function parseJson(string $json)
+    {
+        $document = json_decode($json);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new JsonLdException('Invalid JSON-LD document: '.json_last_error_msg());
+        }
+
+        return $document;
     }
 
     private function isSchemaOrgContext(string $url): bool

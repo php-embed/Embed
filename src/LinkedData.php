@@ -3,19 +3,18 @@ declare(strict_types = 1);
 
 namespace Embed;
 
-use Embed\JsonLd\DocumentLoader;
+use Embed\JsonLd\Expander;
 use Exception;
-use ML\JsonLD\Document as LdDocument;
-use ML\JsonLD\DocumentInterface;
-use ML\JsonLD\GraphInterface;
-use ML\JsonLD\Node;
 use Throwable;
 
 class LinkedData
 {
     use ApiTrait;
 
-    private ?DocumentInterface $document = null;
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $graph = null;
+
+    private bool $graphLoaded = false;
 
     /** @var array<string, mixed> */
     private array $allData = [];
@@ -34,7 +33,7 @@ class LinkedData
         foreach ($keys as $key) {
             $subkeys = explode('.', $key);
 
-            foreach ($graph->getNodes() as $node) {
+            foreach ($graph as $node) {
                 $value = self::getValue($node, ...$subkeys);
 
                 if ($value !== null && $value !== '' && $value !== false && $value !== []) {
@@ -58,34 +57,24 @@ class LinkedData
         return $this->allData;
     }
 
-    private function getGraph(?string $name = null): ?GraphInterface
+    /**
+     * @return array<int, array<string, mixed>>|null
+     */
+    private function getGraph(): ?array
     {
-        if (!isset($this->document)) {
-            try {
-                $encoded = json_encode($this->all());
-                if ($encoded === false) {
-                    $encoded = '{}';
-                }
-                $this->document = self::loadJsonLd($encoded);
-            } catch (Throwable $throwable) {
-                try {
-                    $this->document = self::loadJsonLd('{}');
-                } catch (Throwable $ignored) {
-                    $this->document = new LdDocument();
-                }
-
-                return null;
-            }
+        if ($this->graphLoaded) {
+            return $this->graph;
         }
 
-        return $this->document->getGraph($name);
-    }
+        $this->graphLoaded = true;
 
-    private static function loadJsonLd(string $json): DocumentInterface
-    {
-        return LdDocument::load($json, [
-            'documentLoader' => new DocumentLoader(),
-        ]);
+        try {
+            $this->graph = Expander::expand($this->all());
+        } catch (Throwable $throwable) {
+            $this->graph = null;
+        }
+
+        return $this->graph;
     }
 
     /**
@@ -153,22 +142,27 @@ class LinkedData
     }
 
     /**
+     * @param mixed $node
      * @return mixed
      */
-    private static function getValue(Node $node, string ...$keys)
+    private static function getValue($node, string ...$keys)
     {
         foreach ($keys as $key) {
-            if (is_array($node)) {
+            if (is_array($node) && array_is_list($node)) {
                 $node = array_shift($node);
             }
-            if (!$node instanceof Node) {
+            if (!is_array($node) || array_key_exists('@value', $node)) {
                 return null;
             }
 
-            $node = $node->getProperty("http://schema.org/{$key}");
-
-            if ($node === null) {
+            $property = 'http://schema.org/'.$key;
+            if (!array_key_exists($property, $node)) {
                 return null;
+            }
+
+            $node = $node[$property];
+            if (is_array($node) && array_is_list($node) && count($node) === 1) {
+                $node = $node[0];
             }
         }
 
@@ -181,9 +175,9 @@ class LinkedData
      */
     private static function detectValue($value)
     {
-        if (is_array($value)) {
+        if (is_array($value) && array_is_list($value)) {
             return array_map(
-                fn ($val) => self::detectValue($val),
+                static fn ($val) => self::detectValue($val),
                 array_values($value)
             );
         }
@@ -192,12 +186,17 @@ class LinkedData
             return $value;
         }
 
-        if ($value instanceof Node) {
-            return $value->getId();
+        if (!is_array($value)) {
+            return null;
         }
 
-        if (is_object($value) && method_exists($value, 'getValue')) {
-            return $value->getValue();
+        if (array_key_exists('@value', $value)) {
+            $inner = $value['@value'];
+            return is_scalar($inner) ? $inner : null;
+        }
+
+        if (isset($value['@id']) && is_string($value['@id'])) {
+            return $value['@id'];
         }
 
         return null;
